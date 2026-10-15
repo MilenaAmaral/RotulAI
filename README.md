@@ -123,7 +123,7 @@ SkinAI/
 ### 1. Instalar dependências
 
 ```bash
-git clone https://github.com/<seu-usuario>/SkinAI.git
+git clone https://github.com/MilenaAmaral/SkinAI.git
 cd SkinAI
 npm run setup        # instala tudo e gera o Prisma Client
 ```
@@ -340,4 +340,4 @@ A aplicação ainda **não está publicada**. As instruções acima foram prepar
 
 Distribuído sob a licença MIT. Veja [LICENSE](LICENSE).
 
-Desenvolvido por **Milena Amaral Dias**.
+Desenvolvido por **Milena Amaral Dias** ([GitHub](https://github.com/MilenaAmaral)).
