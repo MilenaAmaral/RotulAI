@@ -1,0 +1,31 @@
+{
+  "name": "skinai",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SkinAI: plataforma de skincare com catálogo de cosméticos, análise de ingredientes e assistente de IA",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "setup": "npm install && npm run db:generate -w backend",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test --workspaces",
+    "build": "npm run build --workspaces",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:seed": "npm run db:seed -w backend"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}
