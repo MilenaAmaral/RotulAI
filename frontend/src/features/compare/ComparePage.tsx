@@ -12,7 +12,7 @@ import { useCreateComparison, useProducts } from '../../lib/queries';
 export function ComparePage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const products = useProducts({ pageSize: 50 });
+  const products = useProducts({ pageSize: 200 });
   const create = useCreateComparison();
   const [productAId, setProductAId] = useState(params.get('a') ?? '');
   const [productBId, setProductBId] = useState(params.get('b') ?? '');
@@ -69,7 +69,7 @@ export function ComparePage() {
             ))}
           </div>
           {products.data.total > products.data.items.length && (
-            <p className="text-sm text-ink-soft">Mostrando os 50 produtos mais recentes.</p>
+            <p className="text-sm text-ink-soft">Mostrando os 200 produtos mais recentes.</p>
           )}
           {formError && (
             <p role="alert" className="text-sm font-medium text-danger">

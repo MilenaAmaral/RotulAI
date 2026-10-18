@@ -45,6 +45,7 @@ describe('ProductForm', () => {
         category: 'HIDRATANTE',
         description: null,
         imageUrl: null,
+        referenceUrl: null,
         ingredients: ['Aqua', 'Glycerin', '1,2-Hexanediol'],
       }),
     );

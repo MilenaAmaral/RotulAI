@@ -8,6 +8,7 @@ export type ProductCategory =
   | 'MASCARA'
   | 'OLHOS'
   | 'LABIOS'
+  | 'TRATAMENTO'
   | 'OUTRO';
 
 export interface User {
@@ -60,6 +61,7 @@ export interface Product {
   category: ProductCategory;
   description: string | null;
   imageUrl: string | null;
+  referenceUrl: string | null;
   createdAt: string;
   updatedAt: string;
   ingredients: ProductIngredient[];
@@ -71,6 +73,7 @@ export interface ProductInput {
   category: ProductCategory;
   description: string | null;
   imageUrl: string | null;
+  referenceUrl: string | null;
   ingredients: string[];
 }
 
