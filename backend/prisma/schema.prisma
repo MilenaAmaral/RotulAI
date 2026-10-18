@@ -1,4 +1,4 @@
-// Modelo de dados do SkinAI.
+// Modelo de dados do Rotulai.
 // Dados privados (produtos, históricos, conversas) pertencem sempre a um User
 // e são removidos em cascata quando a conta é excluída.
 // Ingredient é um catálogo global e compartilhado para evitar duplicação.
@@ -23,6 +23,7 @@ enum ProductCategory {
   MASCARA
   OLHOS
   LABIOS
+  TRATAMENTO
   OUTRO
 }
 
@@ -71,15 +72,17 @@ model RefreshToken {
 }
 
 model Product {
-  id          String          @id @default(uuid()) @db.Uuid
-  userId      String          @db.Uuid
-  name        String          @db.VarChar(120)
-  brand       String          @db.VarChar(80)
-  category    ProductCategory
-  description String?         @db.VarChar(2000)
-  imageUrl    String?         @db.VarChar(500)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id           String          @id @default(uuid()) @db.Uuid
+  userId       String          @db.Uuid
+  name         String          @db.VarChar(120)
+  brand        String          @db.VarChar(80)
+  category     ProductCategory
+  description  String?         @db.VarChar(2000)
+  imageUrl     String?         @db.VarChar(500)
+  // Página pública de onde a lista de ingredientes foi obtida, para conferência.
+  referenceUrl String?         @db.VarChar(500)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   ingredients ProductIngredient[]

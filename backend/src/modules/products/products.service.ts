@@ -2,7 +2,7 @@ import type { Prisma } from '../../generated/prisma/client.js';
 import { notFound } from '../../lib/errors.js';
 import { buildPage } from '../../lib/pagination.js';
 import { prisma } from '../../lib/prisma.js';
-import { resolveIngredientIds } from '../ingredients/ingredients.service.js';
+import { resolveIngredientIds } from '../ingredients/ingredient-resolver.js';
 import type { ProductInput, ProductListQuery } from './products.schemas.js';
 
 export const productDetailInclude = {
@@ -25,6 +25,7 @@ function toProductDetail(product: ProductWithIngredients) {
     category: product.category,
     description: product.description,
     imageUrl: product.imageUrl,
+    referenceUrl: product.referenceUrl,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
     ingredients: product.ingredients.map((item) => ({ ...item.ingredient, position: item.position })),
@@ -92,6 +93,7 @@ export async function createProduct(userId: string, input: ProductInput) {
         category: input.category,
         description: input.description,
         imageUrl: input.imageUrl,
+        referenceUrl: input.referenceUrl,
         ingredients: {
           create: ingredientIds.map((ingredientId, index) => ({ ingredientId, position: index + 1 })),
         },
@@ -116,6 +118,7 @@ export async function updateProduct(userId: string, productId: string, input: Pr
         category: input.category,
         description: input.description,
         imageUrl: input.imageUrl,
+        referenceUrl: input.referenceUrl,
         ingredients: {
           create: ingredientIds.map((ingredientId, index) => ({ ingredientId, position: index + 1 })),
         },
