@@ -64,7 +64,7 @@ function RecentActivity({ items }: { items: Dashboard['recentActivity'] }) {
       </h2>
       {items.length === 0 ? (
         <p className="text-ink-soft">
-          Suas ações no SkinAI aparecerão aqui: produtos cadastrados, consultas, comparações e conversas.
+          Suas ações no Rotulai aparecerão aqui: produtos cadastrados, consultas, comparações e conversas.
         </p>
       ) : (
         <ol className="divide-y divide-line">
@@ -108,7 +108,7 @@ function QuickAccess() {
       </h2>
       <Link to="/produtos" className="panel group flex items-start gap-4 p-5 hover:border-stone">
         <span
-          className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-sun text-graphite"
+          className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-brand text-white"
           aria-hidden="true"
         >
           <Package size={20} />
@@ -155,7 +155,7 @@ function CategoryBreakdown({ data, total }: { data: Dashboard['productsByCategor
               </span>
               <span className="block h-1.5 overflow-hidden rounded-full bg-mist" aria-hidden="true">
                 <span
-                  className="block h-full rounded-full bg-sun"
+                  className="block h-full rounded-full bg-brand-accent"
                   style={{ width: `${Math.max(6, (row.count / total) * 100)}%` }}
                 />
               </span>
@@ -179,7 +179,7 @@ export function DashboardPage() {
           <h1 className="text-[2rem] font-semibold sm:text-[2.4rem]">
             {greeting()}, {firstName}.
           </h1>
-          <p className="mt-1 text-ink-soft">Este é o resumo do seu SkinAI.</p>
+          <p className="mt-1 text-ink-soft">Este é o resumo do seu Rotulai.</p>
         </div>
         <ButtonLink to="/produtos/novo" icon={<Plus size={18} aria-hidden="true" />}>
           Cadastrar produto

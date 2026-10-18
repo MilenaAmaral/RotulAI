@@ -72,7 +72,7 @@ function useTabData(tab: TabKey, page: number) {
             ) : (
               <Badge>Sem informação verificada</Badge>
             )}
-            {item.aiExplanation && <Badge tone="sun">Com explicação da IA</Badge>}
+            {item.aiExplanation && <Badge tone="brand">Com explicação da IA</Badge>}
           </>
         ),
         date: item.createdAt,
@@ -89,7 +89,7 @@ function useTabData(tab: TabKey, page: number) {
         meta: (
           <>
             <Badge tone="outline">{item.result.overlapPercentage}% de sobreposição</Badge>
-            {item.aiExplanation && <Badge tone="sun">Com explicação da IA</Badge>}
+            {item.aiExplanation && <Badge tone="brand">Com explicação da IA</Badge>}
           </>
         ),
         date: item.createdAt,
@@ -152,7 +152,7 @@ function HistoryTab({ tab }: { tab: (typeof TABS)[number] }) {
         <EmptyState
           icon={tab.icon}
           title={`Nenhum registro em ${tab.label.toLowerCase()}`}
-          description="Quando você usar esta área do SkinAI, os registros aparecerão aqui."
+          description="Quando você usar esta área do Rotulai, os registros aparecerão aqui."
         />
       )}
       {rows && total > 0 && (
@@ -279,7 +279,7 @@ export function HistoryPage() {
               onClick={() => select(tab.key)}
               className={cn(
                 '-mb-px inline-flex items-center gap-2 border-b-[3px] px-3 py-2.5 font-semibold whitespace-nowrap transition-colors',
-                selected ? 'border-sun text-graphite' : 'border-transparent text-ink-soft hover:text-graphite',
+                selected ? 'border-brand text-graphite' : 'border-transparent text-ink-soft hover:text-graphite',
               )}
             >
               {tab.icon}

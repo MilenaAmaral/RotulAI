@@ -26,7 +26,7 @@ export interface AiResult {
 }
 
 export const AI_SETUP_INSTRUCTIONS =
-  'Para habilitar a IA, defina AI_PROVIDER=anthropic e ANTHROPIC_API_KEY no arquivo backend/.env e reinicie o servidor. As demais áreas do SkinAI continuam funcionando sem a IA.';
+  'Para habilitar a IA, defina AI_PROVIDER=anthropic e ANTHROPIC_API_KEY no arquivo backend/.env e reinicie o servidor. As demais áreas do Rotulai continuam funcionando sem a IA.';
 
 /** Tamanho máximo aceito para uma resposta do modelo (proteção contra respostas anômalas). */
 const MAX_RESPONSE_CHARS = 12000;

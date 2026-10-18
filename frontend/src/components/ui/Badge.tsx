@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import { cn } from './cn';
 
-type Tone = 'neutral' | 'sun' | 'outline' | 'success';
+type Tone = 'neutral' | 'brand' | 'outline' | 'success';
 
 const tones: Record<Tone, string> = {
   neutral: 'bg-mist text-ink-soft',
-  sun: 'bg-sun-soft text-graphite',
+  brand: 'bg-brand-soft text-brand',
   outline: 'border border-line bg-white text-ink-soft',
   success: 'bg-success-soft text-success',
 };

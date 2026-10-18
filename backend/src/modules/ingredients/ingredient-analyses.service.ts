@@ -58,7 +58,7 @@ export async function explainAnalysis(userId: string, analysisId: string, ai: Ai
   const ingredientName = analysis.ingredient?.name ?? analysis.query;
   const reference = analysis.ingredient?.isCurated
     ? `Funções registradas na base de referência: ${analysis.ingredient.functions.join(', ') || 'não informadas'}.`
-    : 'Este ingrediente não possui informações verificadas na base de referência do SkinAI.';
+    : 'Este ingrediente não possui informações verificadas na base de referência do Rotulai.';
 
   const result = await ai.generate({
     userId,

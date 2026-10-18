@@ -38,7 +38,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
               cn(
                 'relative flex items-center gap-3 rounded-[var(--radius-control)] px-3 py-2 text-[15px] font-medium transition-colors',
                 isActive
-                  ? 'bg-sun-soft text-graphite before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-sun'
+                  ? 'bg-brand-soft text-graphite before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-full before:bg-brand-accent'
                   : 'text-ink-soft hover:bg-mist hover:text-graphite',
               )
             }
@@ -99,7 +99,7 @@ export function AppLayout() {
       {/* Barra lateral (desktop) */}
       <aside className="sticky top-0 hidden h-dvh flex-col self-start border-r border-line bg-white px-4 py-6 lg:flex">
         <Link to="/" className="mb-8 px-3">
-          <Logo animated />
+          <Logo />
         </Link>
         <nav aria-label="Principal" className="flex-1">
           <Navigation />

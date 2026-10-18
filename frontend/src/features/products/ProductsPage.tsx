@@ -139,7 +139,7 @@ export function ProductsPage() {
                   setSearchText('');
                   setParams(new URLSearchParams(), { replace: true });
                 }}
-                className="font-semibold underline decoration-sun decoration-2 underline-offset-4"
+                className="font-semibold underline decoration-brand-accent decoration-2 underline-offset-4"
               >
                 Limpar filtros
               </button>

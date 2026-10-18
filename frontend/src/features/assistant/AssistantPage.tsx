@@ -48,7 +48,7 @@ function ConversationList({ activeId }: { activeId?: string }) {
               aria-current={conversation.id === activeId ? 'page' : undefined}
               className={cn(
                 'block rounded-[var(--radius-control)] px-3 py-2 transition-colors',
-                conversation.id === activeId ? 'bg-sun-soft' : 'hover:bg-mist',
+                conversation.id === activeId ? 'bg-brand-soft' : 'hover:bg-mist',
               )}
             >
               <span className="block truncate text-sm font-medium">{conversation.title}</span>
@@ -71,7 +71,7 @@ function MessageBubble({ message }: { message: Pick<ChatMessage, 'role' | 'conte
           isUser ? 'rounded-br-[4px] bg-graphite text-white' : 'rounded-bl-[4px] border border-line bg-white',
         )}
       >
-        <span className="sr-only">{isUser ? 'Você disse:' : 'Assistente SkinAI respondeu:'}</span>
+        <span className="sr-only">{isUser ? 'Você disse:' : 'Assistente Rotulai respondeu:'}</span>
         {isUser ? <p className="whitespace-pre-wrap">{message.content}</p> : <AiText text={message.content} />}
       </div>
     </li>
@@ -79,7 +79,7 @@ function MessageBubble({ message }: { message: Pick<ChatMessage, 'role' | 'conte
 }
 
 function ProductContextPicker({ selected, onChange }: { selected: string[]; onChange: (ids: string[]) => void }) {
-  const products = useProducts({ pageSize: 50 });
+  const products = useProducts({ pageSize: 200 });
   if (!products.data || products.data.items.length === 0) return null;
   const toggle = (id: string) =>
     onChange(selected.includes(id) ? selected.filter((item) => item !== id) : [...selected, id].slice(-2));
@@ -180,7 +180,7 @@ export function AssistantPage() {
     <>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[1.75rem] font-semibold sm:text-[2rem]">Assistente SkinAI</h1>
+          <h1 className="text-[1.75rem] font-semibold sm:text-[2rem]">Assistente Rotulai</h1>
           <p className="mt-1.5 max-w-2xl text-ink-soft">
             Pergunte sobre termos de rótulos, ingredientes e organização da sua rotina.
           </p>
@@ -212,7 +212,10 @@ export function AssistantPage() {
             {!id && !pendingMessage && (
               <div className="flex h-full flex-col justify-center gap-5 py-6">
                 <div className="flex items-center gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-full bg-sun" aria-hidden="true">
+                  <span
+                    className="flex size-10 items-center justify-center rounded-full bg-brand-soft text-brand"
+                    aria-hidden="true"
+                  >
                     <MessageCircle size={20} />
                   </span>
                   <h2 className="text-xl font-semibold">Como posso ajudar?</h2>

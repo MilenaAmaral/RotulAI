@@ -101,7 +101,7 @@ export function ProductDetailPage() {
               <h2 id="lista-ingredientes" className="text-lg font-semibold">
                 Ingredientes na ordem do rótulo
               </h2>
-              <Badge tone="sun">
+              <Badge tone="brand">
                 {curatedCount} de {data.ingredients.length} com informações na base de referência
               </Badge>
             </div>
@@ -111,9 +111,24 @@ export function ProductDetailPage() {
               showPosition
               label="Ingredientes do produto"
             />
+            {data.referenceUrl && (
+              <p className="mt-4 text-sm text-ink-soft">
+                Fonte da lista:{' '}
+                <a
+                  href={data.referenceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-graphite underline decoration-brand-accent decoration-2 underline-offset-4"
+                >
+                  {new URL(data.referenceUrl).hostname.replace(/^www\./, '')}
+                  <span className="sr-only"> (abre em nova aba)</span>
+                </a>
+                . Confira sempre o rótulo da embalagem: a fórmula pode mudar.
+              </p>
+            )}
             <p className="mt-4 text-sm text-ink-soft">
               {uncuratedIds.size > 0 &&
-                'Ingredientes com borda tracejada ainda não têm conteúdo revisado na base do SkinAI. '}
+                'Ingredientes com borda tracejada ainda não têm conteúdo revisado na base do Rotulai. '}
               Selecione um ingrediente para ver os detalhes. A ordem do rótulo costuma refletir concentração
               decrescente, mas não informa a quantidade exata.
             </p>

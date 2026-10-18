@@ -9,7 +9,7 @@ export function IngredientReference({ ingredient }: { ingredient: IngredientDeta
     return (
       <Notice title="Sem informações verificadas">
         <strong>{ingredient.name}</strong> aparece em rótulos cadastrados, mas ainda não tem conteúdo revisado na base
-        de referência do SkinAI. Não exibimos descrições sem fonte. Você pode pedir uma explicação geral à IA, que será
+        de referência do Rotulai. Não exibimos descrições sem fonte. Você pode pedir uma explicação geral à IA, que será
         identificada como tal.
       </Notice>
     );
@@ -26,14 +26,14 @@ export function IngredientReference({ ingredient }: { ingredient: IngredientDeta
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 id="base-referencia" className="flex items-center gap-2 text-base font-semibold">
           <BookOpen size={18} aria-hidden="true" />
-          Base de referência do SkinAI
+          Base de referência do Rotulai
         </h2>
         <Badge tone="success">Conteúdo revisado</Badge>
       </div>
 
       <div className="mb-5 flex flex-wrap gap-1.5" aria-label="Funções cosméticas">
         {ingredient.functions.map((fn) => (
-          <Badge key={fn} tone="sun">
+          <Badge key={fn} tone="brand">
             {fn}
           </Badge>
         ))}
@@ -66,7 +66,7 @@ export function IngredientReference({ ingredient }: { ingredient: IngredientDeta
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-semibold text-graphite underline decoration-sun decoration-2 underline-offset-4"
+                  className="inline-flex items-center gap-1 font-semibold text-graphite underline decoration-brand-accent decoration-2 underline-offset-4"
                 >
                   {source.title}
                   <ExternalLink size={13} aria-hidden="true" />

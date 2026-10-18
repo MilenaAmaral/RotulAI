@@ -1,8 +1,8 @@
 {
-  "name": "skinai",
+  "name": "rotulai",
   "private": true,
   "version": "1.0.0",
-  "description": "SkinAI: plataforma de skincare com catálogo de cosméticos, análise de ingredientes e assistente de IA",
+  "description": "Rotulai: plataforma de skincare com catálogo de cosméticos, análise de ingredientes e assistente de IA",
   "workspaces": [
     "backend",
     "frontend"

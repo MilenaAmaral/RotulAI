@@ -36,7 +36,7 @@ export function createApp({ ai }: AppDependencies): express.Express {
     '/api/docs',
     helmet({ contentSecurityPolicy: false }),
     swaggerUi.serve,
-    swaggerUi.setup(openApiDocument, { customSiteTitle: 'SkinAI API' }),
+    swaggerUi.setup(openApiDocument, { customSiteTitle: 'Rotulai API' }),
   );
 
   app.use(helmet());

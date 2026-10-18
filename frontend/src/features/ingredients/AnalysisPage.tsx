@@ -40,7 +40,7 @@ export function AnalysisPage() {
           <IngredientReference ingredient={data.ingredient} />
         ) : (
           <Notice title="Não encontrado na base de referência">
-            Não há informação confiável sobre <strong>"{data.query}"</strong> na base do SkinAI. Confira a grafia no
+            Não há informação confiável sobre <strong>"{data.query}"</strong> na base do Rotulai. Confira a grafia no
             rótulo ou peça uma explicação geral à IA, lembrando que ela pode não reconhecer nomes incomuns.
           </Notice>
         )}

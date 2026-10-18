@@ -8,7 +8,7 @@ beforeEach(resetDatabase);
 afterAll(() => prisma.$disconnect());
 
 const refresh = (cookie?: string) => {
-  const req = request(app).post('/api/auth/refresh').set('X-Requested-With', 'SkinAI');
+  const req = request(app).post('/api/auth/refresh').set('X-Requested-With', 'Rotulai');
   return cookie ? req.set('Cookie', cookie) : req;
 };
 
@@ -24,7 +24,7 @@ describe('autenticação', () => {
     expect(typeof response.body.accessToken).toBe('string');
 
     const cookie = (response.headers['set-cookie'] as unknown as string[])[0]!;
-    expect(cookie).toMatch(/^skinai_rt=/);
+    expect(cookie).toMatch(/^rotulai_rt=/);
     expect(cookie).toMatch(/HttpOnly/i);
     expect(cookie).toMatch(/Path=\/api\/auth/);
 
@@ -95,7 +95,7 @@ describe('autenticação', () => {
     const user = await registerUser(app);
     await request(app)
       .post('/api/auth/logout')
-      .set('X-Requested-With', 'SkinAI')
+      .set('X-Requested-With', 'Rotulai')
       .set('Cookie', user.cookie)
       .expect(204);
     await refresh(user.cookie).expect(401);
