@@ -34,6 +34,11 @@ describe('validação de cadastro de produtos', () => {
     expect(issuesFor({ ...base, imageUrl: 'https://exemplo.com/a.png' })).toEqual([]);
   });
 
+  it('aceita fonte da lista apenas com https', () => {
+    expect(issuesFor({ ...base, referenceUrl: 'http://exemplo.com' })).toContain('referenceUrl');
+    expect(issuesFor({ ...base, referenceUrl: 'https://exemplo.com/produto' })).toEqual([]);
+  });
+
   it('limita a quantidade e o tamanho dos ingredientes', () => {
     expect(issuesFor({ ...base, ingredients: Array.from({ length: 101 }, (_, i) => `Ing ${i}`) })).toContain(
       'ingredients',

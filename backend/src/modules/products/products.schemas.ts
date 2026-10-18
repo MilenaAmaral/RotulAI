@@ -36,6 +36,16 @@ export const productInputSchema = z.object({
     .refine((value) => value === null || /^https:\/\/[^\s]+$/i.test(value), {
       message: 'A imagem deve ser uma URL iniciada por https://',
     }),
+  referenceUrl: z
+    .string()
+    .trim()
+    .max(500, 'O link da fonte deve ter no máximo 500 caracteres.')
+    .optional()
+    .nullable()
+    .transform((value) => (value ? value : null))
+    .refine((value) => value === null || /^https:\/\/[^\s]+$/i.test(value), {
+      message: 'O link da fonte deve começar com https://',
+    }),
   ingredients: z
     .array(
       z.string().trim().min(1, 'Ingrediente vazio.').max(120, 'Cada ingrediente deve ter no máximo 120 caracteres.'),
@@ -46,6 +56,8 @@ export const productInputSchema = z.object({
 });
 
 export const productListQuerySchema = paginationQuerySchema.extend({
+  // O catálogo aceita páginas maiores para alimentar seletores (comparador e assistente).
+  pageSize: z.coerce.number().int().min(1).max(200).default(12),
   q: z.string().trim().max(120).optional(),
   category: z.enum(ProductCategory).optional(),
 });
