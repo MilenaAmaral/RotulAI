@@ -1,8 +1,8 @@
-# Arquitetura do SkinAI
+# Arquitetura do Rotulai
 
 ## Visão geral
 
-O SkinAI é um monorepo com dois workspaces npm:
+O Rotulai é um monorepo com dois workspaces npm:
 
 - `backend/`: API REST em Express 5 + TypeScript, com Prisma 7 e PostgreSQL.
 - `frontend/`: SPA em React 19 + Vite, que consome exclusivamente a API.
@@ -70,7 +70,7 @@ sequenceDiagram
   B->>A: POST /auth/login (e-mail, senha)
   A->>D: verifica hash bcrypt
   A->>D: grava SHA-256 do refresh token (familyId)
-  A-->>B: accessToken (JSON) + cookie httpOnly skinai_rt
+  A-->>B: accessToken (JSON) + cookie httpOnly rotulai_rt
   Note over B: accessToken fica só em memória
   B->>A: GET /products (Authorization: Bearer)
   A-->>B: 200
@@ -120,4 +120,4 @@ src/
 
 ### Identidade visual
 
-Conceito "marca-texto no rótulo": o amarelo (`#F4C542`) marca o que importa (ação principal, item ativo, ingredientes em comum) e nunca é usado como cor de texto sobre branco. Tipografia: Bricolage Grotesque (títulos e logotipo) e Hanken Grotesk (interface), ambas servidas localmente via Fontsource.
+Conceito "marca-texto no rótulo" com paleta verde-sálvia: verde profundo (`#1F4D3F`) para ações principais e marca, verde médio (`#3FA37A`) para detalhes decorativos e menta (`#DDF1E6` / `#BFE6D2`) como marcador suave de itens ativos e ingredientes em comum. O verde médio não é usado como cor de texto pequeno sobre branco. Tipografia: Bricolage Grotesque (títulos e logotipo) e Hanken Grotesk (interface), ambas servidas localmente via Fontsource.
