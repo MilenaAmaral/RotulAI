@@ -24,6 +24,7 @@ const serverFieldMap: Record<string, keyof ProductFormValues> = {
   category: 'category',
   description: 'description',
   imageUrl: 'imageUrl',
+  referenceUrl: 'referenceUrl',
   ingredients: 'ingredientsText',
 };
 
@@ -116,6 +117,18 @@ export function ProductForm({ defaultValues = emptyProductForm, submitLabel, onS
           error={errors.ingredientsText?.message}
           {...register('ingredientsText')}
         />
+        <div className="mt-5">
+          <TextField
+            label="Fonte da lista de ingredientes"
+            optional
+            type="url"
+            inputMode="url"
+            placeholder="https://..."
+            hint="Página do fabricante ou base pública onde a lista pode ser conferida."
+            error={errors.referenceUrl?.message}
+            {...register('referenceUrl')}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

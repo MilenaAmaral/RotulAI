@@ -53,6 +53,7 @@ export function EditProductPage() {
             category: product.data.category,
             description: product.data.description ?? '',
             imageUrl: product.data.imageUrl ?? '',
+            referenceUrl: product.data.referenceUrl ?? '',
             ingredientsText: formatIngredientText(product.data.ingredients.map((item) => item.name)),
           }}
           onCancel={() => navigate(`/produtos/${id}`)}

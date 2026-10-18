@@ -12,6 +12,7 @@ const categories = [
   'MASCARA',
   'OLHOS',
   'LABIOS',
+  'TRATAMENTO',
   'OUTRO',
 ] as const satisfies readonly ProductCategory[];
 
@@ -22,6 +23,11 @@ export const productFormSchema = z.object({
   category: z.enum(categories, { error: 'Selecione uma categoria.' }),
   description: z.string().trim().max(2000, 'Máximo de 2000 caracteres.'),
   imageUrl: z
+    .string()
+    .trim()
+    .max(500, 'Máximo de 500 caracteres.')
+    .refine((value) => value === '' || /^https:\/\/\S+$/i.test(value), 'Use um endereço iniciado por https://'),
+  referenceUrl: z
     .string()
     .trim()
     .max(500, 'Máximo de 500 caracteres.')
@@ -43,6 +49,7 @@ export const emptyProductForm: ProductFormValues = {
   category: 'SERUM',
   description: '',
   imageUrl: '',
+  referenceUrl: '',
   ingredientsText: '',
 };
 
@@ -53,6 +60,7 @@ export function toProductInput(values: ProductFormValues): ProductInput {
     category: values.category,
     description: values.description.trim() || null,
     imageUrl: values.imageUrl.trim() || null,
+    referenceUrl: values.referenceUrl.trim() || null,
     ingredients: parseIngredientText(values.ingredientsText),
   };
 }

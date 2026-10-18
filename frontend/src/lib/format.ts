@@ -10,6 +10,7 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   MASCARA: 'Máscara',
   OLHOS: 'Área dos olhos',
   LABIOS: 'Lábios',
+  TRATAMENTO: 'Tratamento',
   OUTRO: 'Outro',
 };
 
