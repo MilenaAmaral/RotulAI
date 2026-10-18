@@ -136,7 +136,7 @@ function RecentLookups() {
         </h2>
         <Link
           to="/historico?aba=ingredientes"
-          className="text-sm font-semibold underline decoration-sun decoration-2 underline-offset-4"
+          className="text-sm font-semibold underline decoration-brand-accent decoration-2 underline-offset-4"
         >
           Ver histórico
         </Link>
@@ -179,7 +179,7 @@ export function IngredientsPage() {
         </div>
         <aside className="flex flex-col gap-6">
           <RecentLookups />
-          <div className="flex items-start gap-3 rounded-[var(--radius-panel)] bg-sun-soft p-5 text-sm">
+          <div className="flex items-start gap-3 rounded-[var(--radius-panel)] bg-brand-soft p-5 text-sm">
             <FlaskConical size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
             <p>
               Informação sobre ingredientes é geral. A reação de cada pele depende da fórmula completa, da concentração

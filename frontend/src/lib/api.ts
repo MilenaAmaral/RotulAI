@@ -67,7 +67,7 @@ export function refreshSession(): Promise<Session | null> {
     try {
       const response = await rawFetch('/api/auth/refresh', {
         method: 'POST',
-        headers: { 'X-Requested-With': 'SkinAI' },
+        headers: { 'X-Requested-With': 'Rotulai' },
       });
       if (!response.ok) {
         setAccessToken(null);

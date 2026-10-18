@@ -1,5 +1,5 @@
-# Imagem de produção da API SkinAI (build a partir da raiz do repositório:
-#   docker build -f backend/Dockerfile -t skinai-api .)
+# Imagem de produção da API Rotulai (build a partir da raiz do repositório:
+#   docker build -f backend/Dockerfile -t rotulai-api .)
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./

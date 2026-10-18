@@ -15,7 +15,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
   return (
     <div className="flex flex-col items-start gap-3 rounded-[var(--radius-panel)] border border-dashed border-stone/70 bg-white/60 px-6 py-10 sm:items-center sm:text-center">
       <div
-        className="flex size-11 items-center justify-center rounded-full bg-sun-soft text-graphite"
+        className="flex size-11 items-center justify-center rounded-full bg-brand-soft text-graphite"
         aria-hidden="true"
       >
         {icon}
@@ -62,7 +62,7 @@ export function Notice({
     <div
       className={cn(
         'flex gap-3 rounded-[var(--radius-control)] border px-4 py-3 text-sm',
-        tone === 'caution' ? 'border-sun/60 bg-sun-soft' : 'border-line bg-mist',
+        tone === 'caution' ? 'border-brand-accent/50 bg-brand-soft' : 'border-line bg-mist',
         className,
       )}
     >
@@ -79,8 +79,8 @@ export function Notice({
 export function EducationalDisclaimer({ className }: { className?: string }) {
   return (
     <Notice tone="caution" className={className}>
-      Conteúdo educacional. O SkinAI não diagnostica, não prescreve tratamentos e não garante ausência de alergias. Para
-      orientação individual, consulte um dermatologista.
+      Conteúdo educacional. O Rotulai não diagnostica, não prescreve tratamentos e não garante ausência de alergias.
+      Para orientação individual, consulte um dermatologista.
     </Notice>
   );
 }

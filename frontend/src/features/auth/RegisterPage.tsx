@@ -65,7 +65,7 @@ export function RegisterPage() {
         Já tem conta?{' '}
         <Link
           to="/entrar"
-          className="font-semibold text-graphite underline decoration-sun decoration-2 underline-offset-4"
+          className="font-semibold text-graphite underline decoration-brand-accent decoration-2 underline-offset-4"
         >
           Entrar
         </Link>

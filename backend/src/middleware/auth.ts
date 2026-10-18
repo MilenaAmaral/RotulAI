@@ -30,7 +30,7 @@ export function getUserId(req: Request): string {
  * o que bloqueia requisições forjadas (CSRF) vindas de outros sites.
  */
 export function requireCsrfHeader(req: Request, _res: Response, next: NextFunction): void {
-  if (req.get('X-Requested-With') !== 'SkinAI') {
+  if (req.get('X-Requested-With') !== 'Rotulai') {
     throw unauthorized('Requisição sem cabeçalho de proteção obrigatório.');
   }
   next();

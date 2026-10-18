@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await api<void>('/api/auth/logout', { method: 'POST', auth: false, headers: { 'X-Requested-With': 'SkinAI' } });
+      await api<void>('/api/auth/logout', { method: 'POST', auth: false, headers: { 'X-Requested-With': 'Rotulai' } });
     } finally {
       clearSession();
     }

@@ -7,7 +7,7 @@ import { parseInput } from '../../middleware/validate.js';
 import { deleteAccountSchema, loginSchema, registerSchema } from './auth.schemas.js';
 import * as authService from './auth.service.js';
 
-export const REFRESH_COOKIE = 'skinai_rt';
+export const REFRESH_COOKIE = 'rotulai_rt';
 
 const baseCookieOptions: CookieOptions = {
   httpOnly: true,

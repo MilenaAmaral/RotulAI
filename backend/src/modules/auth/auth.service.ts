@@ -24,7 +24,7 @@ const publicUserSelect = { id: true, name: true, email: true, createdAt: true } 
 
 // Hash fixo usado quando o e-mail não existe, para que o tempo de resposta
 // não revele se a conta está cadastrada.
-const DUMMY_HASH = bcrypt.hashSync('skinai-dummy-password-1', 10);
+const DUMMY_HASH = bcrypt.hashSync('rotulai-dummy-password-1', 10);
 
 async function createSession(user: PublicUser, familyId: string = randomUUID()): Promise<AuthSession> {
   const { token, tokenHash } = generateRefreshToken();

@@ -41,7 +41,7 @@ const csrfHeader = {
   name: 'X-Requested-With',
   in: 'header',
   required: true,
-  schema: { type: 'string', enum: ['SkinAI'] },
+  schema: { type: 'string', enum: ['Rotulai'] },
 };
 
 function crudHistory(tag: string, resource: string, extra: Record<string, object> = {}) {
@@ -85,10 +85,10 @@ export function buildOpenApiDocument() {
   return {
     openapi: '3.1.0',
     info: {
-      title: 'SkinAI API',
+      title: 'Rotulai API',
       version: '1.0.0',
       description:
-        'API REST do SkinAI. Autenticação via access token JWT (Bearer, curta duração) e refresh token em cookie httpOnly. Conteúdo educacional: não substitui orientação dermatológica.',
+        'API REST do Rotulai. Autenticação via access token JWT (Bearer, curta duração) e refresh token em cookie httpOnly. Conteúdo educacional: não substitui orientação dermatológica.',
     },
     servers: [{ url: '/api' }],
     tags: [

@@ -1,20 +1,22 @@
 @import 'tailwindcss';
 
 /*
- * Identidade visual SkinAI
- * Conceito: "marca-texto no rótulo". O amarelo funciona como um marcador sobre a informação
- * que importa (ação principal, item ativo, ingrediente em destaque), nunca como fundo de página.
- * Amarelo nunca é usado como cor de texto sobre branco (contraste insuficiente).
+ * Identidade visual Rotulai
+ * Conceito: "marca-texto no rótulo". O verde-sálvia marca o que importa (ação principal,
+ * item ativo, ingrediente em destaque); a menta funciona como marcador suave.
+ * O verde médio (accent) é decorativo e não é usado como cor de texto pequeno sobre branco.
  */
 @theme {
-  --color-sun: #f4c542;
-  --color-sun-soft: #fff4cc;
-  --color-sun-deep: #c99a12;
-  --color-mist: #f3f4f6;
-  --color-stone: #9ca3af;
-  --color-graphite: #252525;
-  --color-ink-soft: #4b5563;
-  --color-line: #e5e7eb;
+  --color-brand: #1f4d3f;
+  --color-brand-deep: #173b30;
+  --color-brand-accent: #3fa37a;
+  --color-brand-soft: #ddf1e6;
+  --color-brand-mark: #bfe6d2;
+  --color-mist: #f5f7f6;
+  --color-stone: #8f9a96;
+  --color-graphite: #1c2321;
+  --color-ink-soft: #4a5652;
+  --color-line: #e2e8e5;
   --color-danger: #b42318;
   --color-danger-soft: #fef3f2;
   --color-success: #067647;
@@ -26,8 +28,8 @@
   --radius-panel: 12px;
   --radius-control: 8px;
 
-  --shadow-soft: 0 1px 2px rgb(37 37 37 / 0.04), 0 4px 16px -4px rgb(37 37 37 / 0.08);
-  --shadow-lift: 0 2px 4px rgb(37 37 37 / 0.05), 0 12px 32px -8px rgb(37 37 37 / 0.14);
+  --shadow-soft: 0 1px 2px rgb(28 35 33 / 0.04), 0 4px 16px -4px rgb(28 35 33 / 0.08);
+  --shadow-lift: 0 2px 4px rgb(28 35 33 / 0.05), 0 12px 32px -8px rgb(28 35 33 / 0.14);
 }
 
 @layer base {
@@ -52,14 +54,14 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-graphite);
+    outline: 2px solid var(--color-brand);
     outline-offset: 2px;
-    box-shadow: 0 0 0 5px var(--color-sun);
+    box-shadow: 0 0 0 5px var(--color-brand-mark);
     border-radius: 4px;
   }
 
   ::selection {
-    background: var(--color-sun-soft);
+    background: var(--color-brand-soft);
     color: var(--color-graphite);
   }
 
@@ -76,9 +78,14 @@
 }
 
 @layer components {
-  /* Marca-texto: faixa amarela atrás do texto, como em um rótulo destacado à mão. */
+  /* Marca-texto: faixa menta atrás do texto, como em um rótulo destacado à mão. */
   .highlight {
-    background-image: linear-gradient(transparent 52%, var(--color-sun) 52%, var(--color-sun) 92%, transparent 92%);
+    background-image: linear-gradient(
+      transparent 52%,
+      var(--color-brand-mark) 52%,
+      var(--color-brand-mark) 92%,
+      transparent 92%
+    );
     background-repeat: no-repeat;
     padding: 0 0.12em;
     box-decoration-break: clone;
@@ -117,8 +124,9 @@
 
 /* Único movimento de entrada da interface: o marcador do logotipo "passa" ao carregar. */
 .logo-sweep {
-  background-image: linear-gradient(var(--color-sun), var(--color-sun));
+  background-image: linear-gradient(var(--color-brand-mark), var(--color-brand-mark));
   background-repeat: no-repeat;
   background-position: left center;
+  background-size: 100% 100%;
   animation: sweep 700ms cubic-bezier(0.65, 0, 0.35, 1) 150ms both;
 }

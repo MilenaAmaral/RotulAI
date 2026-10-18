@@ -28,7 +28,7 @@ export function ComparisonPage() {
     <>
       <PageHeader
         title="Resultado da comparação"
-        description={`Calculado pelas regras do SkinAI em ${formatDateTime(data.createdAt)}, com os dados dos produtos naquele momento.`}
+        description={`Calculado pelas regras do Rotulai em ${formatDateTime(data.createdAt)}, com os dados dos produtos naquele momento.`}
         back={{ to: '/comparar', label: 'Comparador' }}
         actions={
           <ButtonLink to="/comparar" variant="secondary">

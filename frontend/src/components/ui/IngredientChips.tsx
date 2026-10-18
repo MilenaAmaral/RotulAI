@@ -49,7 +49,7 @@ export function IngredientChips({
         const classes = cn(
           'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-sm transition-colors',
           highlighted
-            ? 'border-sun bg-sun-soft font-semibold text-graphite'
+            ? 'border-brand-accent bg-brand-soft font-semibold text-graphite'
             : muted
               ? 'border-dashed border-stone bg-white text-ink-soft'
               : 'border-line bg-white text-graphite',

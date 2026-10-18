@@ -59,7 +59,7 @@ export function LoginPage() {
         Ainda não tem conta?{' '}
         <Link
           to="/cadastro"
-          className="font-semibold text-graphite underline decoration-sun decoration-2 underline-offset-4"
+          className="font-semibold text-graphite underline decoration-brand-accent decoration-2 underline-offset-4"
         >
           Criar conta
         </Link>

@@ -18,7 +18,7 @@ const server = app.listen(env.PORT, () => {
   const status = ai.status();
   logger.info(
     { port: env.PORT, ai: status.enabled ? `${status.provider} (${status.model})` : 'desabilitada' },
-    `SkinAI API em http://localhost:${env.PORT} | documentação em /api/docs`,
+    `Rotulai API em http://localhost:${env.PORT} | documentação em /api/docs`,
   );
   if (!status.enabled) logger.warn(status.setupInstructions);
 });

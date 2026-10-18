@@ -2,8 +2,8 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { env } from '../../config/env.js';
 
-const ISSUER = 'skinai-api';
-const AUDIENCE = 'skinai-web';
+const ISSUER = 'rotulai-api';
+const AUDIENCE = 'rotulai-web';
 
 export interface AccessTokenPayload {
   sub: string;
