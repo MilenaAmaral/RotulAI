@@ -1,10 +1,10 @@
-# SkinAI
+# Rotulai
 
 Plataforma full stack para organizar cosméticos, entender ingredientes de rótulos e comparar produtos, com um assistente de inteligência artificial integrado pelo servidor.
 
-![Dashboard do SkinAI](docs/screenshots/dashboard.png)
+![Dashboard do Rotulai](docs/screenshots/dashboard.png)
 
-> **Aviso:** o SkinAI fornece informações educacionais. Não diagnostica doenças, não prescreve tratamentos, não garante ausência de alergias e não substitui a orientação de um dermatologista.
+> **Aviso:** o Rotulai fornece informações educacionais. Não diagnostica doenças, não prescreve tratamentos, não garante ausência de alergias e não substitui a orientação de um dermatologista.
 
 ## Sumário
 
@@ -24,7 +24,7 @@ Plataforma full stack para organizar cosméticos, entender ingredientes de rótu
 
 ## Problema
 
-Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas longas de ingredientes. Quem quer entender o que está usando acaba alternando entre buscas na internet, conteúdos sem fonte e anotações soltas. O SkinAI centraliza esse fluxo:
+Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas longas de ingredientes. Quem quer entender o que está usando acaba alternando entre buscas na internet, conteúdos sem fonte e anotações soltas. O Rotulai centraliza esse fluxo:
 
 - um catálogo pessoal com a lista de ingredientes de cada produto;
 - uma base de referência de ingredientes com conteúdo revisado e fontes para verificação;
@@ -33,15 +33,15 @@ Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas 
 
 ## Funcionalidades
 
-| Área                  | O que faz                                                                                                                                                                                                                                                                           |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Autenticação**      | Cadastro, login, sessão persistente com rotação de refresh token, logout e exclusão de conta com todos os dados.                                                                                                                                                                    |
-| **Dashboard**         | Saudação, indicadores reais (produtos, ingredientes consultados, comparações, conversas), atividade recente, produtos por categoria e acessos rápidos.                                                                                                                              |
-| **Catálogo**          | Listagem paginada, cadastro, edição, exclusão com confirmação, busca por nome ou marca, filtro por categoria e página de detalhes. Ingredientes são extraídos do texto do rótulo e vinculados ao catálogo global sem duplicação (inclusive por sinônimo: "Glicerina" = "Glycerin"). |
-| **Ingredientes**      | Consulta por nome INCI ou nome comum, base de referência com 30 ingredientes revisados, sinônimos, funções, uso, cuidados e fontes. Conteúdo da base e explicação da IA aparecem em blocos separados. Quando não há informação confiável, a interface informa a limitação.          |
-| **Comparador**        | Ingredientes em comum, exclusivos de cada produto, marca, categoria, descrições e percentual de sobreposição (índice de Jaccard). A IA pode explicar as diferenças, sem declarar qual produto é melhor.                                                                             |
-| **Assistente SkinAI** | Chat com histórico, sugestões iniciais, contexto opcional de até 2 produtos do catálogo, limite de caracteres, indicador de digitação e mensagens claras de indisponibilidade.                                                                                                      |
-| **Histórico**         | Consultas de ingredientes, comparações e conversas persistidas no PostgreSQL, com exclusão individual, limpeza por tipo e política de retenção visível ao usuário.                                                                                                                  |
+| Área                   | O que faz                                                                                                                                                                                                                                                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Autenticação**       | Cadastro, login, sessão persistente com rotação de refresh token, logout e exclusão de conta com todos os dados.                                                                                                                                                                    |
+| **Dashboard**          | Saudação, indicadores reais (produtos, ingredientes consultados, comparações, conversas), atividade recente, produtos por categoria e acessos rápidos.                                                                                                                              |
+| **Catálogo**           | Listagem paginada, cadastro, edição, exclusão com confirmação, busca por nome ou marca, filtro por categoria e página de detalhes. Ingredientes são extraídos do texto do rótulo e vinculados ao catálogo global sem duplicação (inclusive por sinônimo: "Glicerina" = "Glycerin"). |
+| **Ingredientes**       | Consulta por nome INCI ou nome comum, base de referência com 30 ingredientes revisados, sinônimos, funções, uso, cuidados e fontes. Conteúdo da base e explicação da IA aparecem em blocos separados. Quando não há informação confiável, a interface informa a limitação.          |
+| **Comparador**         | Ingredientes em comum, exclusivos de cada produto, marca, categoria, descrições e percentual de sobreposição (índice de Jaccard). A IA pode explicar as diferenças, sem declarar qual produto é melhor.                                                                             |
+| **Assistente Rotulai** | Chat com histórico, sugestões iniciais, contexto opcional de até 2 produtos do catálogo, limite de caracteres, indicador de digitação e mensagens claras de indisponibilidade.                                                                                                      |
+| **Histórico**          | Consultas de ingredientes, comparações e conversas persistidas no PostgreSQL, com exclusão individual, limpeza por tipo e política de retenção visível ao usuário.                                                                                                                  |
 
 ### Telas
 
@@ -86,7 +86,7 @@ Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
 ## Estrutura de pastas
 
 ```
-SkinAI/
+Rotulai/
 ├── backend/
 │   ├── prisma/              # schema, migrações versionadas e seed
 │   ├── src/
@@ -123,8 +123,8 @@ SkinAI/
 ### 1. Instalar dependências
 
 ```bash
-git clone https://github.com/MilenaAmaral/SkinAI.git
-cd SkinAI
+git clone https://github.com/MilenaAmaral/Rotulai.git
+cd Rotulai
 npm run setup        # instala tudo e gera o Prisma Client
 ```
 
@@ -134,7 +134,7 @@ npm run setup        # instala tudo e gera o Prisma Client
 npm run db:up        # docker compose up -d db
 ```
 
-O contêiner cria o usuário `skinai` (senha `skinai`), o banco `skinai` e o banco de testes `skinai_test`. Com um PostgreSQL próprio, crie os dois bancos e ajuste `DATABASE_URL` e `TEST_DATABASE_URL`.
+O contêiner cria o usuário `rotulai` (senha `rotulai`), o banco `rotulai` e o banco de testes `rotulai_test`. Com um PostgreSQL próprio, crie os dois bancos e ajuste `DATABASE_URL` e `TEST_DATABASE_URL`.
 
 ### 3. Configurar variáveis de ambiente
 
@@ -155,10 +155,19 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 ```bash
 npm run db:migrate   # aplica as migrações (prisma migrate dev)
-npm run db:seed      # base de referência + usuária e produtos fictícios
+npm run db:seed      # base de referência + catálogo com 101 produtos reais
 ```
 
-Acesso de demonstração (fictício): **demo@skinai.dev** / **Demo@12345**.
+Acesso de demonstração (usuária fictícia): **demo@rotulai.dev** / **Demo@12345**.
+
+### Catálogo de demonstração
+
+O seed cadastra **101 produtos de skincare** de 13 marcas encontradas no Brasil (Avène, Bioderma, CeraVe, Cetaphil, Eucerin, ISDIN, La Roche-Posay, Neutrogena, Nivea, Principia, Sallve, The Ordinary e Vichy), distribuídos entre limpeza, hidratantes, séruns, protetores solares, tônicos, tratamentos e área dos olhos.
+
+- As listas de ingredientes foram copiadas das páginas públicas do [Skinsort](https://skinsort.com) em 18/10/2026. Cada produto guarda o link da página de origem (`referenceUrl`), exibido na tela de detalhes.
+- Fórmulas mudam e podem variar por país e lote. O rótulo da embalagem é sempre a fonte definitiva.
+- Os dados ficam em `backend/prisma/data/catalogo-produtos.json`, validados por teste automatizado com as mesmas regras do cadastro pela API.
+- As marcas e nomes de produtos pertencem aos respectivos titulares. O Rotulai não tem afiliação com nenhuma delas, não exibe imagens de produtos e não faz recomendação de compra.
 
 ### 5. Executar
 
@@ -190,7 +199,7 @@ Reinicie a API. Sem a chave, o assistente e os botões de explicação mostram c
 | Variável                            | Padrão                  | Descrição                                       |
 | ----------------------------------- | ----------------------- | ----------------------------------------------- |
 | `DATABASE_URL`                      | obrigatória             | Conexão PostgreSQL.                             |
-| `TEST_DATABASE_URL`                 | `.../skinai_test`       | Banco usado pelos testes.                       |
+| `TEST_DATABASE_URL`                 | `.../rotulai_test`      | Banco usado pelos testes.                       |
 | `PORT`                              | `3333`                  | Porta da API.                                   |
 | `CORS_ORIGINS`                      | `http://localhost:5173` | Origens permitidas, separadas por vírgula.      |
 | `TRUST_PROXY`                       | `0`                     | Proxies confiáveis (use `1` em Render/Railway). |
@@ -225,7 +234,7 @@ npm run typecheck
 npm run format:check
 ```
 
-Os testes do back-end usam o banco `skinai_test` (as migrações são aplicadas automaticamente). Cobrem:
+Os testes do back-end usam o banco `rotulai_test` (as migrações são aplicadas automaticamente). Cobrem:
 
 - validação de cadastro de produtos e das requisições;
 - regras determinísticas de comparação;
@@ -272,7 +281,7 @@ npm start -w backend # executa a API compilada
 
 **API (Render, Railway ou Fly.io):**
 
-- Com Docker: `docker build -f backend/Dockerfile -t skinai-api .` (a imagem aplica `prisma migrate deploy` antes de iniciar).
+- Com Docker: `docker build -f backend/Dockerfile -t rotulai-api .` (a imagem aplica `prisma migrate deploy` antes de iniciar).
 - Sem Docker: build `npm ci && npm run db:generate -w backend && npm run build -w backend`; start `npm run db:deploy -w backend && npm start -w backend`.
 - Variáveis: `NODE_ENV=production`, `DATABASE_URL`, `JWT_ACCESS_SECRET`, `CORS_ORIGINS=https://seu-front.vercel.app`, `TRUST_PROXY=1`, `ANTHROPIC_API_KEY` (opcional).
 - Health check: `GET /api/health`.
@@ -294,7 +303,7 @@ A aplicação ainda **não está publicada**. As instruções acima foram prepar
 - Senhas com bcrypt (custo 12); política mínima de 8 caracteres com letras e números.
 - Access token JWT de 15 minutos mantido **apenas em memória** no navegador (nunca em `localStorage`).
 - Refresh token opaco de 256 bits em cookie `httpOnly`, com `path=/api/auth`, armazenado no banco somente como hash SHA-256, rotacionado a cada uso; reuso de um token antigo revoga toda a família de sessões.
-- Rotas de refresh e logout exigem o cabeçalho `X-Requested-With: SkinAI`, bloqueando requisições forjadas de outros sites (CSRF).
+- Rotas de refresh e logout exigem o cabeçalho `X-Requested-With: Rotulai`, bloqueando requisições forjadas de outros sites (CSRF).
 - Autorização no servidor: toda consulta filtra por `userId`. Recursos de outro usuário retornam 404, sem revelar sua existência.
 - Validação com Zod em todas as entradas; corpo limitado a 64 KB.
 - Rate limiting global, de autenticação, de renovação de sessão e de IA (por usuário), além de cota diária de IA.
@@ -318,6 +327,7 @@ A aplicação ainda **não está publicada**. As instruções acima foram prepar
 
 ## Limitações conhecidas
 
+- O catálogo de demonstração reproduz listas de ingredientes de uma fonte pública em uma data específica; elas podem estar desatualizadas em relação ao produto vendido hoje.
 - A base de referência contém 30 ingredientes. Textos são resumos educacionais escritos para o projeto; as fontes (CosIng da Comissão Europeia e Anvisa) servem para verificação e não são citação literal.
 - Ingredientes digitados que não estão na base são criados apenas com o nome, sem descrição, e assim aparecem na interface.
 - Se um ingrediente for cadastrado por sinônimo antes da carga da base de referência, os dois registros não são unificados automaticamente.

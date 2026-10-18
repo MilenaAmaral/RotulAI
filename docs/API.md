@@ -1,12 +1,12 @@
-# API do SkinAI
+# API do Rotulai
 
 Base: `/api`. Documentação interativa em `/api/docs` (Swagger UI) e especificação OpenAPI 3.1 em `/api/docs.json`.
 
 ## Autenticação
 
-1. `POST /auth/login` ou `/auth/register` retorna `{ user, accessToken }` e define o cookie `skinai_rt` (httpOnly, `path=/api/auth`).
+1. `POST /auth/login` ou `/auth/register` retorna `{ user, accessToken }` e define o cookie `rotulai_rt` (httpOnly, `path=/api/auth`).
 2. Envie `Authorization: Bearer <accessToken>` nas rotas privadas. O token expira em 15 minutos.
-3. Para renovar, chame `POST /auth/refresh` com o cookie e o cabeçalho `X-Requested-With: SkinAI`.
+3. Para renovar, chame `POST /auth/refresh` com o cookie e o cabeçalho `X-Requested-With: Rotulai`.
 
 ## Formato de erro
 
@@ -61,7 +61,7 @@ Content-Type: application/json
 }
 ```
 
-Categorias: `LIMPEZA`, `TONICO`, `SERUM`, `HIDRATANTE`, `PROTETOR_SOLAR`, `ESFOLIANTE`, `MASCARA`, `OLHOS`, `LABIOS`, `OUTRO`.
+Categorias: `LIMPEZA`, `TONICO`, `SERUM`, `HIDRATANTE`, `PROTETOR_SOLAR`, `ESFOLIANTE`, `MASCARA`, `OLHOS`, `LABIOS`, `TRATAMENTO`, `OUTRO`.
 
 ### Consultar ingrediente
 
