@@ -1,13 +1,12 @@
 /**
- * Dados de demonstração do SkinAI.
+ * Dados de demonstração do Rotulai.
  *
- * - O usuário e os produtos são FICTÍCIOS (marcas inventadas, sem dados pessoais reais).
+ * - O usuário de demonstração é FICTÍCIO (sem dados pessoais reais).
+ * - Os produtos do catálogo de demonstração estão em data/catalogo-produtos.json, com a fonte de cada lista.
  * - Os textos dos ingredientes são resumos educacionais escritos para o projeto. As fontes
  *   listadas são bases públicas para VERIFICAÇÃO do nome INCI, funções e restrições; elas não
  *   são citadas como origem literal dos textos.
  */
-import type { ProductCategory } from '../src/generated/prisma/enums.js';
-
 export interface SeedSource {
   title: string;
   publisher: string;
@@ -309,95 +308,8 @@ export const INGREDIENTS: SeedIngredient[] = [
   },
 ];
 
-export interface SeedProduct {
-  name: string;
-  brand: string;
-  category: ProductCategory;
-  description: string;
-  ingredients: string[];
-}
-
 export const DEMO_USER = {
   name: 'Usuária Demonstração',
-  email: 'demo@skinai.dev',
+  email: 'demo@rotulai.dev',
   password: 'Demo@12345',
 };
-
-/** Produtos e marcas fictícios, criados apenas para demonstração. */
-export const DEMO_PRODUCTS: SeedProduct[] = [
-  {
-    name: 'Gel de Limpeza Equilíbrio',
-    brand: 'Aurora Lab (fictícia)',
-    category: 'LIMPEZA',
-    description: 'Produto fictício de demonstração. Gel de limpeza facial para uso diário.',
-    ingredients: [
-      'Aqua',
-      'Sodium Laureth Sulfate',
-      'Glycerin',
-      'Salicylic Acid',
-      'Niacinamide',
-      'Xanthan Gum',
-      'Phenoxyethanol',
-      'Parfum',
-    ],
-  },
-  {
-    name: 'Sérum Hidratante Orvalho',
-    brand: 'Aurora Lab (fictícia)',
-    category: 'SERUM',
-    description: 'Produto fictício de demonstração. Sérum leve com foco em hidratação.',
-    ingredients: [
-      'Aqua',
-      'Glycerin',
-      'Sodium Hyaluronate',
-      'Hyaluronic Acid',
-      'Panthenol',
-      'Allantoin',
-      'Butylene Glycol',
-      'Phenoxyethanol',
-      'Ethylhexylglycerin',
-    ],
-  },
-  {
-    name: 'Sérum Uniformizador B3',
-    brand: 'Brisa Dermocosméticos (fictícia)',
-    category: 'SERUM',
-    description: 'Produto fictício de demonstração. Sérum com niacinamida.',
-    ingredients: [
-      'Aqua',
-      'Niacinamide',
-      'Glycerin',
-      'Butylene Glycol',
-      'Sodium Hyaluronate',
-      'Xanthan Gum',
-      'Phenoxyethanol',
-      'Ethylhexylglycerin',
-    ],
-  },
-  {
-    name: 'Creme Barreira Nutritivo',
-    brand: 'Brisa Dermocosméticos (fictícia)',
-    category: 'HIDRATANTE',
-    description: 'Produto fictício de demonstração. Creme hidratante de textura média.',
-    ingredients: [
-      'Aqua',
-      'Glycerin',
-      'Cetearyl Alcohol',
-      'Squalane',
-      'Dimethicone',
-      'Ceramide NP',
-      'Panthenol',
-      'Tocopherol',
-      'Bisabolol',
-      'Phenoxyethanol',
-    ],
-  },
-  {
-    name: 'Protetor Solar Mineral Diário',
-    brand: 'Aurora Lab (fictícia)',
-    category: 'PROTETOR_SOLAR',
-    description:
-      'Produto fictício de demonstração. O fator de proteção não é informado por se tratar de item fictício.',
-    ingredients: ['Aqua', 'Zinc Oxide', 'Titanium Dioxide', 'Dimethicone', 'Glycerin', 'Tocopherol', 'Phenoxyethanol'],
-  },
-];
