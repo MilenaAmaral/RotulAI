@@ -1,9 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
-import { unauthorized } from '../lib/errors.js';
+import type { AccessProfile } from '../generated/prisma/enums.js';
+import { AppError, unauthorized } from '../lib/errors.js';
+import { prisma } from '../lib/prisma.js';
 import { verifyAccessToken } from '../modules/auth/tokens.js';
 
 /** Exige um access token válido no cabeçalho Authorization: Bearer <token>. */
-export function requireAuth(req: Request, _res: Response, next: NextFunction): void {
+export async function requireAuth(req: Request, _res: Response, next: NextFunction): Promise<void> {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
     throw unauthorized();
@@ -12,7 +14,11 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
   if (!payload) {
     throw unauthorized('Sessão expirada ou inválida. Entre novamente.');
   }
-  req.auth = { userId: payload.sub };
+  const user = await prisma.user.findUnique({ where: { id: payload.sub }, select: { role: true } });
+  if (!user) {
+    throw unauthorized('Sessão expirada ou inválida. Entre novamente.');
+  }
+  req.auth = { userId: payload.sub, role: user.role };
   next();
 }
 
@@ -22,6 +28,18 @@ export function getUserId(req: Request): string {
     throw unauthorized();
   }
   return req.auth.userId;
+}
+
+export function requireRole(...allowedRoles: AccessProfile[]) {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    if (!req.auth) {
+      throw unauthorized();
+    }
+    if (!allowedRoles.includes(req.auth.role)) {
+      throw new AppError(403, 'FORBIDDEN', 'Seu perfil não tem permissão para esta ação.');
+    }
+    next();
+  };
 }
 
 /**

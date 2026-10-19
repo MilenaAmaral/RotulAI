@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import bcrypt from 'bcryptjs';
+import type { AccessProfile } from '../../generated/prisma/enums.js';
 import { env } from '../../config/env.js';
 import { AppError, unauthorized } from '../../lib/errors.js';
 import { prisma } from '../../lib/prisma.js';
@@ -10,6 +11,7 @@ export interface PublicUser {
   id: string;
   name: string;
   email: string;
+  role: AccessProfile;
   createdAt: Date;
 }
 
@@ -20,7 +22,7 @@ export interface AuthSession {
   refreshExpiresAt: Date;
 }
 
-const publicUserSelect = { id: true, name: true, email: true, createdAt: true } as const;
+const publicUserSelect = { id: true, name: true, email: true, role: true, createdAt: true } as const;
 
 // Hash fixo usado quando o e-mail não existe, para que o tempo de resposta
 // não revele se a conta está cadastrada.
@@ -54,7 +56,13 @@ export async function login(input: LoginInput): Promise<AuthSession> {
   if (!user || !passwordMatches) {
     throw unauthorized('E-mail ou senha incorretos.');
   }
-  return createSession({ id: user.id, name: user.name, email: user.email, createdAt: user.createdAt });
+  return createSession({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    createdAt: user.createdAt,
+  });
 }
 
 /**

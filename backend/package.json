@@ -10,11 +10,15 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
     "test:watch": "vitest",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:seed-public": "tsx prisma/seed-public.ts",
+    "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
+    "benchmark:catalog-search": "tsx scripts/benchmark-catalog-search.ts",
     "db:reset": "prisma migrate reset"
   },
   "dependencies": {

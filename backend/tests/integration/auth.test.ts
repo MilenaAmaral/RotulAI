@@ -19,7 +19,7 @@ describe('autenticação', () => {
       .send({ name: 'Ana', email: 'ANA@Exemplo.dev ', password: 'SenhaForte1' })
       .expect(201);
 
-    expect(response.body.user).toMatchObject({ name: 'Ana', email: 'ana@exemplo.dev' });
+    expect(response.body.user).toMatchObject({ name: 'Ana', email: 'ana@exemplo.dev', role: 'FREE' });
     expect(response.body.user).not.toHaveProperty('passwordHash');
     expect(typeof response.body.accessToken).toBe('string');
 

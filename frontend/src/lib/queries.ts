@@ -15,6 +15,10 @@ import type {
   ProductCategory,
   ProductInput,
   ProductListItem,
+  PublicIngredient,
+  PublicIngredientSummary,
+  PublicProduct,
+  PublicProductSearchPage,
 } from '../types/api';
 import { api, toQueryString } from './api';
 
@@ -37,7 +41,53 @@ export const queryKeys = {
   conversation: (id: string) => ['conversations', 'detail', id] as const,
   aiStatus: ['ai-status'] as const,
   policy: ['history-policy'] as const,
+  publicProducts: (params: object) => ['public-catalog', 'products', params] as const,
+  publicProduct: (slug: string) => ['public-catalog', 'product', slug] as const,
+  publicIngredients: (params: object) => ['public-catalog', 'ingredients', params] as const,
+  publicIngredient: (id: string) => ['public-catalog', 'ingredient', id] as const,
+  publicIngredientFunctions: ['public-catalog', 'ingredient-functions'] as const,
 };
+
+// ---------- Catálogo público ----------
+export const usePublicProducts = (params: ProductListParams) =>
+  useQuery({
+    queryKey: queryKeys.publicProducts(params),
+    queryFn: () =>
+      api<PublicProductSearchPage>(`/api/catalog/products${toQueryString({ ...params })}`, { auth: false }),
+    placeholderData: keepPreviousData,
+  });
+
+export const usePublicProduct = (slug: string | undefined) =>
+  useQuery({
+    queryKey: queryKeys.publicProduct(slug ?? ''),
+    queryFn: () => api<PublicProduct>(`/api/catalog/products/${slug}`, { auth: false }),
+    enabled: Boolean(slug),
+  });
+
+export const usePublicIngredients = (params: { q?: string; function?: string; page?: number }) =>
+  useQuery({
+    queryKey: queryKeys.publicIngredients(params),
+    queryFn: () =>
+      api<Page<PublicIngredientSummary>>(
+        `/api/catalog/ingredients${toQueryString({ ...params, pageSize: 24 })}`,
+        { auth: false },
+      ),
+    placeholderData: keepPreviousData,
+  });
+
+export const usePublicIngredient = (id: string | undefined) =>
+  useQuery({
+    queryKey: queryKeys.publicIngredient(id ?? ''),
+    queryFn: () => api<PublicIngredient>(`/api/catalog/ingredients/${id}`, { auth: false }),
+    enabled: Boolean(id),
+  });
+
+export const usePublicIngredientFunctions = () =>
+  useQuery({
+    queryKey: queryKeys.publicIngredientFunctions,
+    queryFn: () => api<string[]>('/api/catalog/ingredients/functions', { auth: false }),
+    staleTime: 5 * 60_000,
+  });
 
 // ---------- Dashboard ----------
 export const useDashboard = () =>

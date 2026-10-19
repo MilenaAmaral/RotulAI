@@ -38,19 +38,27 @@ enum AiFeature {
   COMPARISON_EXPLANATION
 }
 
+enum AccessProfile {
+  FREE
+  PREMIUM
+  ADMIN
+}
+
 model User {
   id           String   @id @default(uuid()) @db.Uuid
   name         String   @db.VarChar(80)
   email        String   @unique @db.VarChar(254)
   passwordHash String
+  role         AccessProfile @default(FREE)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   refreshTokens      RefreshToken[]
   products           Product[]
+  favorites          Favorite[]
   ingredientAnalyses IngredientAnalysis[]
   comparisons        ProductComparison[]
-  conversations      Conversation[]
+  conversations     Conversation[]
   aiUsage            AiUsageLog[]
 }
 
@@ -91,6 +99,61 @@ model Product {
   @@index([userId, category])
 }
 
+model CatalogProduct {
+  id           String   @id @default(uuid()) @db.Uuid
+  slug         String   @unique @db.VarChar(180)
+  name         String   @db.VarChar(120)
+  brand        String   @db.VarChar(80)
+  category     ProductCategory
+  referenceUrl String?  @db.VarChar(500)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ingredients CatalogProductIngredient[]
+  favorites   Favorite[]
+
+  @@unique([brand, name])
+  @@index([category, name])
+  @@index([brand, name])
+}
+
+model Favorite {
+  userId           String   @db.Uuid
+  catalogProductId String   @db.Uuid
+  createdAt        DateTime @default(now())
+
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  catalogProduct CatalogProduct @relation(fields: [catalogProductId], references: [id], onDelete: Cascade)
+
+  @@id([userId, catalogProductId])
+  @@index([catalogProductId])
+  @@index([userId, createdAt])
+}
+
+model CatalogProductIngredient {
+  catalogProductId String @db.Uuid
+  ingredientId     String @db.Uuid
+  position         Int
+
+  catalogProduct CatalogProduct @relation(fields: [catalogProductId], references: [id], onDelete: Cascade)
+  ingredient     Ingredient     @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@id([catalogProductId, ingredientId])
+  @@index([ingredientId])
+}
+
+model CatalogSearchSynonym {
+  id               String          @id @default(uuid()) @db.Uuid
+  phrase           String          @db.VarChar(120)
+  normalizedPhrase String          @unique @db.VarChar(120)
+  expansions       String[]
+  category         ProductCategory?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([category])
+}
+
 model Ingredient {
   id             String   @id @default(uuid()) @db.Uuid
   // Nome de exibição (geralmente a nomenclatura INCI).
@@ -112,6 +175,7 @@ model Ingredient {
 
   sources  IngredientSource[]
   products ProductIngredient[]
+  catalogProducts CatalogProductIngredient[]
   analyses IngredientAnalysis[]
 
   @@index([searchTerms], type: Gin)
