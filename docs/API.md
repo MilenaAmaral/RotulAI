@@ -4,7 +4,7 @@ Base: `/api`. Documentação interativa em `/api/docs` (Swagger UI) e especifica
 
 ## Autenticação
 
-1. `POST /auth/login` ou `/auth/register` retorna `{ user, accessToken }` e define o cookie `rotulai_rt` (httpOnly, `path=/api/auth`).
+1. `POST /auth/login` ou `/auth/register` retorna `{ user, accessToken }` e define o cookie `rotulai_rt` (httpOnly, `path=/api/auth`). `user.role` é `FREE`, `PREMIUM` ou `ADMIN`.
 2. Envie `Authorization: Bearer <accessToken>` nas rotas privadas. O token expira em 15 minutos.
 3. Para renovar, chame `POST /auth/refresh` com o cookie e o cabeçalho `X-Requested-With: Rotulai`.
 
@@ -24,7 +24,7 @@ Base: `/api`. Documentação interativa em `/api/docs` (Swagger UI) e especifica
 | ---- | -------------------------------------- | ------------------------------------------------- |
 | 400  | `VALIDATION_ERROR`                     | Entrada inválida, JSON malformado, id malformado  |
 | 401  | `UNAUTHORIZED`                         | Sem token, token expirado, credenciais incorretas |
-| 403  | `FORBIDDEN`                            | Senha incorreta ao excluir a conta                |
+| 403  | `FORBIDDEN`                            | Senha incorreta ou perfil sem permissão             |
 | 404  | `NOT_FOUND`                            | Recurso inexistente **ou de outro usuário**       |
 | 409  | `CONFLICT`                             | E-mail já cadastrado                              |
 | 413  | `VALIDATION_ERROR`                     | Corpo acima de 64 KB                              |
@@ -41,6 +41,22 @@ Listas aceitam `page` (padrão 1) e `pageSize` (padrão 12, máximo 50) e retorn
 ```json
 { "items": [], "page": 1, "pageSize": 12, "total": 0, "totalPages": 1 }
 ```
+
+## Catálogo público (sem autenticação)
+
+O catálogo público é independente dos produtos pessoais. As páginas `/catalogo` e `/catalogo/ingredientes` consultam estes endpoints sem enviar token:
+
+| Método | Rota | Parâmetros | Descrição |
+| --- | --- | --- | --- |
+| GET | `/catalog/products` | `q`, `category`, `page`, `pageSize` | Busca aproximada em nome, marca, categoria e ingredientes; filtra por categoria. |
+| GET | `/catalog/products/:slug` | — | Detalhes, ingredientes na ordem da lista e link de referência. |
+| GET | `/catalog/ingredients` | `q`, `function`, `page`, `pageSize` | Pesquisa ingredientes curados por nome/sinônimo e filtra por função. |
+| GET | `/catalog/ingredients/functions` | — | Funções disponíveis para o filtro. |
+| GET | `/catalog/ingredients/:id` | — | Detalhe curado com funções, informações e fontes. |
+
+O endpoint de detalhe público de ingrediente retorna 404 quando o registro não está curado. Nenhum destes endpoints retorna `userId` ou produtos do catálogo pessoal. A lista de produtos do catálogo público é alimentada separadamente por `npm run db:seed-public -w backend`; o comando faz upsert dos registros e vínculos, sem excluir dados.
+
+A listagem de produtos retorna a página de resultados e `suggestions`, uma lista separada para a mensagem “Você quis dizer…” quando não há correspondência exata. A expansão usa a tabela `CatalogSearchSynonym`; consulte [docs/BUSCA-CATALOGO.md](./BUSCA-CATALOGO.md) para sinônimos, consultas de regressão e benchmark.
 
 ## Exemplos
 

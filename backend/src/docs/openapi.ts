@@ -22,6 +22,7 @@ const json = (description: string, schema?: object) => ({
 const errors = {
   400: json('Dados inválidos', ref('Error')),
   401: json('Não autenticado', ref('Error')),
+  403: json('Perfil sem permissão para a ação', ref('Error')),
   404: json('Recurso não encontrado ou pertencente a outro usuário', ref('Error')),
   429: json('Limite de requisições atingido', ref('Error')),
 };
@@ -93,6 +94,7 @@ export function buildOpenApiDocument() {
     servers: [{ url: '/api' }],
     tags: [
       { name: 'Sistema' },
+      { name: 'Catálogo público' },
       { name: 'Autenticação' },
       { name: 'Dashboard' },
       { name: 'Produtos' },
@@ -140,6 +142,7 @@ export function buildOpenApiDocument() {
                 id: { type: 'string' },
                 name: { type: 'string' },
                 email: { type: 'string' },
+                role: { $ref: '#/components/schemas/AccessProfile' },
                 createdAt: { type: 'string', format: 'date-time' },
               },
             },
@@ -147,6 +150,7 @@ export function buildOpenApiDocument() {
           },
         },
         ProductCategory: { type: 'string', enum: PRODUCT_CATEGORIES },
+        AccessProfile: { type: 'string', enum: ['FREE', 'PREMIUM', 'ADMIN'] },
       },
     },
     paths: {
@@ -155,6 +159,56 @@ export function buildOpenApiDocument() {
           tags: ['Sistema'],
           summary: 'Health check da API e do banco',
           responses: { 200: json('Serviço saudável'), 503: json('Banco indisponível') },
+        },
+      },
+      '/catalog/products': {
+        get: {
+          tags: ['Catálogo público'],
+          summary: 'Pesquisa produtos publicados',
+          parameters: [
+            ...pageParams,
+            { name: 'q', in: 'query', schema: { type: 'string', maxLength: 120 } },
+            { name: 'category', in: 'query', schema: ref('ProductCategory') },
+          ],
+          responses: {
+            200: json('Lista paginada de produtos públicos com sugestões quando não há correspondência exata'),
+            400: errors[400],
+          },
+        },
+      },
+      '/catalog/products/{slug}': {
+        get: {
+          tags: ['Catálogo público'],
+          summary: 'Detalha um produto publicado',
+          parameters: [{ name: 'slug', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: json('Detalhe público do produto'), 404: errors[404] },
+        },
+      },
+      '/catalog/ingredients': {
+        get: {
+          tags: ['Catálogo público'],
+          summary: 'Pesquisa ingredientes com referência curada',
+          parameters: [
+            ...pageParams,
+            { name: 'q', in: 'query', schema: { type: 'string', maxLength: 120 } },
+            { name: 'function', in: 'query', schema: { type: 'string', maxLength: 80 } },
+          ],
+          responses: { 200: json('Lista paginada de ingredientes curados'), 400: errors[400] },
+        },
+      },
+      '/catalog/ingredients/functions': {
+        get: {
+          tags: ['Catálogo público'],
+          summary: 'Lista funções disponíveis nos ingredientes curados',
+          responses: { 200: json('Funções para filtro') },
+        },
+      },
+      '/catalog/ingredients/{id}': {
+        get: {
+          tags: ['Catálogo público'],
+          summary: 'Detalha um ingrediente curado',
+          parameters: [idParam],
+          responses: { 200: json('Detalhe público do ingrediente'), 404: errors[404] },
         },
       },
       '/auth/register': {

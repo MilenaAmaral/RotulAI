@@ -15,6 +15,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  role: 'FREE' | 'PREMIUM' | 'ADMIN';
   createdAt: string;
 }
 
@@ -66,6 +67,38 @@ export interface Product {
   updatedAt: string;
   ingredients: ProductIngredient[];
 }
+
+export interface PublicProductListItem {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string;
+  category: ProductCategory;
+  ingredientCount: number;
+}
+
+export interface PublicProductSearchPage extends Page<PublicProductListItem> {
+  suggestions: PublicProductListItem[];
+}
+
+export interface PublicProduct {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string;
+  category: ProductCategory;
+  referenceUrl: string | null;
+  ingredients: ProductIngredient[];
+}
+
+export interface PublicIngredientSummary {
+  id: string;
+  name: string;
+  synonyms: string[];
+  functions: string[];
+}
+
+export type PublicIngredient = Omit<IngredientDetail, 'userProducts'>;
 
 export interface ProductInput {
   name: string;

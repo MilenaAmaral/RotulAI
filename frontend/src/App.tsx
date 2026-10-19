@@ -5,6 +5,7 @@ import { DashboardPage } from './features/dashboard/DashboardPage';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { RedirectIfAuthenticated, RequireAuth } from './auth/RequireAuth';
 import { AppLayout } from './components/layout/AppLayout';
+import { PublicCatalogLayout } from './features/public-catalog/PublicCatalogLayout';
 
 /** Carrega páginas sob demanda para reduzir o pacote inicial. */
 function lazyPage<M extends Record<string, unknown>>(loader: () => Promise<M>, name: keyof M) {
@@ -12,6 +13,25 @@ function lazyPage<M extends Record<string, unknown>>(loader: () => Promise<M>, n
 }
 
 const router = createBrowserRouter([
+  {
+    path: '/catalogo',
+    element: <PublicCatalogLayout />,
+    children: [
+      { index: true, lazy: lazyPage(() => import('./features/public-catalog/PublicProductsPage'), 'PublicProductsPage') },
+      {
+        path: 'produtos/:slug',
+        lazy: lazyPage(() => import('./features/public-catalog/PublicProductPage'), 'PublicProductPage'),
+      },
+      {
+        path: 'ingredientes',
+        lazy: lazyPage(() => import('./features/public-catalog/PublicIngredientsPage'), 'PublicIngredientsPage'),
+      },
+      {
+        path: 'ingredientes/:id',
+        lazy: lazyPage(() => import('./features/public-catalog/PublicIngredientPage'), 'PublicIngredientPage'),
+      },
+    ],
+  },
   {
     element: <RedirectIfAuthenticated />,
     children: [

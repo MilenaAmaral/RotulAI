@@ -41,12 +41,16 @@ Funções puras ficam separadas para testes sem banco:
 erDiagram
   User ||--o{ RefreshToken : possui
   User ||--o{ Product : cadastra
+  User ||--o{ Favorite : salva
   User ||--o{ IngredientAnalysis : consulta
   User ||--o{ ProductComparison : compara
   User ||--o{ Conversation : conversa
   User ||--o{ AiUsageLog : usa
   Product ||--o{ ProductIngredient : contém
+  CatalogProduct ||--o{ CatalogProductIngredient : contém
+  CatalogProduct ||--o{ Favorite : favoritado
   Ingredient ||--o{ ProductIngredient : aparece_em
+  Ingredient ||--o{ CatalogProductIngredient : aparece_em
   Ingredient ||--o{ IngredientSource : tem
   Ingredient ||--o{ IngredientAnalysis : referenciado
   Conversation ||--o{ Message : contém
@@ -56,9 +60,15 @@ Decisões:
 
 - **Ingredient é global** e identificado por `normalizedName` único. `searchTerms` guarda sinônimos normalizados (índice GIN) para que "Glicerina" e "Glycerin" apontem para o mesmo registro. `isCurated` separa conteúdo revisado de nomes vindos de rótulos.
 - **ProductIngredient** tem chave composta (`productId`, `ingredientId`) e `position`, preservando a ordem do rótulo.
+- `User.role` persiste um dos perfis `FREE`, `PREMIUM` ou `ADMIN`; o cadastro público sempre cria `FREE`. O middleware consulta o perfil atual no banco em cada requisição autenticada, para que mudanças de permissão não dependam da expiração do JWT.
+- **CatalogProduct** e `CatalogProductIngredient` representam o catálogo global curado; `Favorite` relaciona usuários a itens desse catálogo. `Product`/`ProductIngredient` continuam preservados como registros pessoais legados durante a migração, sem serem publicados automaticamente.
+- O seed de ingredientes e `db:seed-public` são não destrutivos: não apagam contas, não recriam usuário de demonstração e não sobrescrevem conteúdo existente. O primeiro Admin é criado pelo comando `npm run admin:bootstrap -w backend`, com credenciais fornecidas pelo ambiente.
+- O catálogo público pesquisa por nome/marca e categoria; a referência de ingredientes pública mostra apenas `Ingredient.isCurated = true`. Detalhes públicos não retornam produtos do usuário.
+- A busca pública usa `pg_trgm` + `unaccent`, índices GIN de expressão no nome/marca e uma tabela `CatalogSearchSynonym` para expansão editável de frases. O endpoint devolve sugestões separadas quando não encontra correspondência exata. Ver [docs/BUSCA-CATALOGO.md](./BUSCA-CATALOGO.md).
 - **ProductComparison.result** guarda um retrato do resultado (JSON). Se um produto for editado ou excluído depois, o histórico continua coerente.
 - **AiUsageLog** fica separado do histórico para que apagar conversas não zere a cota diária.
 - Dados privados usam `onDelete: Cascade` a partir de `User`; `ProductIngredient → Ingredient` usa `Restrict` para proteger o catálogo.
+- `CatalogProductIngredient → Ingredient` também usa `Restrict`; apagar um ingrediente em uso público não é permitido sem atualizar primeiro os vínculos.
 
 ### Autenticação
 
@@ -73,6 +83,7 @@ sequenceDiagram
   A-->>B: accessToken (JSON) + cookie httpOnly rotulai_rt
   Note over B: accessToken fica só em memória
   B->>A: GET /products (Authorization: Bearer)
+  A->>D: consulta perfil de acesso atual
   A-->>B: 200
   B->>A: POST /auth/refresh (cookie + X-Requested-With)
   A->>D: revoga token atual, cria novo na mesma família
@@ -81,6 +92,8 @@ sequenceDiagram
 ```
 
 O front-end compartilha uma única requisição de refresh entre chamadas simultâneas, evitando que a rotação seja confundida com reuso.
+
+  O JWT identifica a conta, mas não concede um perfil: `requireAuth` lê `User.role` no PostgreSQL e `requireRole` aplica a autorização no backend. O comando de bootstrap promove uma conta existente somente quando a senha fornecida confere; caso contrário, não altera a conta.
 
 ### Serviço de IA
 
@@ -111,7 +124,7 @@ src/
 ├── auth/        AuthProvider (sessão), guardas de rota
 ├── lib/         api.ts (fetch + refresh automático), queries.ts (TanStack Query), formatação
 ├── components/  layout, UI reutilizável (botões, campos acessíveis, diálogo, toasts, chips)
-└── features/    páginas por domínio, com rotas carregadas sob demanda
+└── features/    páginas por domínio, com rotas carregadas sob demanda (inclui `public-catalog/`)
 ```
 
 - **Estado do servidor** em TanStack Query, com chaves centralizadas e invalidação após mutações.

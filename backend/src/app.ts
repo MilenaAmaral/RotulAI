@@ -12,6 +12,7 @@ import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { createApiLimiter } from './middleware/rate-limit.js';
 import type { AiService } from './modules/ai/ai.service.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { catalogRouter } from './modules/catalog/catalog.routes.js';
 import { comparisonsRouter } from './modules/comparisons/comparisons.routes.js';
 import { conversationsRouter } from './modules/conversations/conversations.routes.js';
 import { ingredientAnalysesRouter, ingredientsRouter } from './modules/ingredients/ingredients.routes.js';
@@ -89,6 +90,7 @@ export function createApp({ ai }: AppDependencies): express.Express {
     }
   });
 
+  api.use('/catalog', catalogRouter());
   api.use('/auth', authRouter());
 
   // Todas as rotas abaixo exigem autenticação.
