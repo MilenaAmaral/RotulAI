@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { createTestApp, prisma, registerUser, resetDatabase } from '../helpers.js';
+import { createProduct, createTestApp, prisma, registerUser, resetDatabase } from '../helpers.js';
 
 const app = createTestApp();
 
@@ -19,7 +19,7 @@ describe('autenticação', () => {
       .send({ name: 'Ana', email: 'ANA@Exemplo.dev ', password: 'SenhaForte1' })
       .expect(201);
 
-    expect(response.body.user).toMatchObject({ name: 'Ana', email: 'ana@exemplo.dev' });
+    expect(response.body.user).toMatchObject({ name: 'Ana', email: 'ana@exemplo.dev', role: 'FREE' });
     expect(response.body.user).not.toHaveProperty('passwordHash');
     expect(typeof response.body.accessToken).toBe('string');
 
@@ -103,11 +103,7 @@ describe('autenticação', () => {
 
   it('exclui a conta e todos os dados em cascata mediante senha', async () => {
     const user = await registerUser(app);
-    await request(app)
-      .post('/api/products')
-      .set('Authorization', `Bearer ${user.token}`)
-      .send({ name: 'Produto', brand: 'Marca', category: 'OUTRO', ingredients: ['Aqua'] })
-      .expect(201);
+    await createProduct(app, user);
 
     await request(app)
       .delete('/api/auth/me')

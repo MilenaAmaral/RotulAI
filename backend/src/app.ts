@@ -8,10 +8,15 @@ import { buildOpenApiDocument } from './docs/openapi.js';
 import { logger } from './lib/logger.js';
 import { prisma } from './lib/prisma.js';
 import { requireAuth } from './middleware/auth.js';
+import { requireRole } from './middleware/auth.js';
+import { AccessProfile } from './generated/prisma/enums.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { createApiLimiter } from './middleware/rate-limit.js';
 import type { AiService } from './modules/ai/ai.service.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { adminRouter } from './modules/admin/admin.routes.js';
+import { catalogRouter } from './modules/catalog/catalog.routes.js';
+import { favoritesRouter } from './modules/favorites/favorites.routes.js';
 import { comparisonsRouter } from './modules/comparisons/comparisons.routes.js';
 import { conversationsRouter } from './modules/conversations/conversations.routes.js';
 import { ingredientAnalysesRouter, ingredientsRouter } from './modules/ingredients/ingredients.routes.js';
@@ -89,10 +94,13 @@ export function createApp({ ai }: AppDependencies): express.Express {
     }
   });
 
+  api.use('/catalog', catalogRouter());
   api.use('/auth', authRouter());
 
   // Todas as rotas abaixo exigem autenticação.
   api.use(requireAuth);
+  api.use('/admin', requireRole(AccessProfile.ADMIN), adminRouter());
+  api.use('/favorites', favoritesRouter());
   api.use('/products', productsRouter());
   api.use('/ingredients', ingredientsRouter());
   api.use('/ingredient-analyses', ingredientAnalysesRouter(ai));

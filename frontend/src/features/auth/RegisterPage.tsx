@@ -70,6 +70,15 @@ export function RegisterPage() {
           Entrar
         </Link>
       </p>
+      <p className="mt-3 text-sm text-ink-soft">
+        Quer apenas consultar?{' '}
+        <Link
+          to="/catalogo"
+          className="font-semibold text-graphite underline decoration-brand-accent decoration-2 underline-offset-4"
+        >
+          Ver catálogo público
+        </Link>
+      </p>
     </AuthLayout>
   );
 }
