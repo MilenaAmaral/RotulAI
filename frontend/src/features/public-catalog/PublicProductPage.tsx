@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router';
+import { useAuth } from '../../auth/auth-context';
 import { Badge } from '../../components/ui/Badge';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { EducationalDisclaimer, ErrorState } from '../../components/ui/States';
@@ -6,8 +7,10 @@ import { LoadingBlock } from '../../components/ui/Spinner';
 import { CATEGORY_LABELS } from '../../lib/format';
 import { usePublicProduct } from '../../lib/queries';
 import { SeoMeta } from './SeoMeta';
+import { FavoriteButton } from './FavoriteButton';
 
 export function PublicProductPage() {
+  const { status } = useAuth();
   const { slug } = useParams();
   const product = usePublicProduct(slug);
 
@@ -26,15 +29,18 @@ export function PublicProductPage() {
 
   return (
     <>
-      <SeoMeta title={`${data.name} | Rotulai`} description={description} canonicalPath={`/catalogo/produtos/${data.slug}`} />
-      <PageHeader
-        title={data.name}
-        description={data.brand}
-        back={{ to: '/catalogo', label: 'Catálogo público' }}
+      <SeoMeta
+        title={`${data.name} | Rotulai`}
+        description={description}
+        canonicalPath={`/catalogo/produtos/${data.slug}`}
       />
+      <PageHeader title={data.name} description={data.brand} back={{ to: '/catalogo', label: 'Catálogo público' }} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="flex flex-col gap-6">
           <section className="panel p-5 sm:p-6">
+            <div className="mb-5 flex justify-end">
+              <FavoriteButton productId={data.id} />
+            </div>
             <dl className="grid gap-4 sm:grid-cols-2">
               <div>
                 <dt className="text-sm text-ink-soft">Marca</dt>
@@ -72,8 +78,8 @@ export function PublicProductPage() {
               ))}
             </ol>
             <p className="mt-4 text-sm text-ink-soft">
-              A ordem pode refletir a concentração, mas não informa quantidades exatas. Fórmulas mudam e variam por
-              país ou lote; confira sempre a embalagem.
+              A ordem pode refletir a concentração, mas não informa quantidades exatas. Fórmulas mudam e variam por país
+              ou lote; confira sempre a embalagem.
             </p>
             {data.referenceUrl && (
               <p className="mt-3 text-sm">
@@ -91,16 +97,34 @@ export function PublicProductPage() {
           <EducationalDisclaimer />
         </div>
         <aside className="panel h-fit p-5">
-          <h2 className="font-semibold">Acesse seus recursos pessoais</h2>
-          <p className="mt-2 text-sm text-ink-soft">
-            Entre para cadastrar seu catálogo, consultar o histórico e usar o assistente.
-          </p>
-          <Link
-            to="/entrar"
-            className="mt-4 inline-flex rounded-[var(--radius-control)] bg-brand px-4 py-2 text-sm font-semibold text-white"
-          >
-            Entrar
-          </Link>
+          {status === 'authenticated' ? (
+            <>
+              <h2 className="font-semibold">Seus recursos pessoais</h2>
+              <p className="mt-2 text-sm text-ink-soft">
+                Acesse seus favoritos e o assistente disponível no seu plano.
+              </p>
+              <Link
+                to="/favoritos"
+                className="mt-4 inline-flex rounded-[var(--radius-control)] bg-brand px-4 py-2 text-sm font-semibold text-white"
+              >
+                Ver favoritos
+              </Link>
+            </>
+          ) : (
+            <>
+              <h2 className="font-semibold">Salve produtos e conheça seus recursos</h2>
+              <p className="mt-2 text-sm text-ink-soft">
+                Crie uma conta gratuita para salvar favoritos e experimentar o assistente de IA. O catálogo público
+                permanece disponível sem login.
+              </p>
+              <Link
+                to="/cadastro"
+                className="mt-4 inline-flex rounded-[var(--radius-control)] bg-brand px-4 py-2 text-sm font-semibold text-white"
+              >
+                Criar conta grátis
+              </Link>
+            </>
+          )}
         </aside>
       </div>
     </>

@@ -3,7 +3,7 @@ import { LoginPage } from './features/auth/LoginPage';
 import { RegisterPage } from './features/auth/RegisterPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { createBrowserRouter, RouterProvider } from 'react-router';
-import { RedirectIfAuthenticated, RequireAuth } from './auth/RequireAuth';
+import { RedirectIfAuthenticated, RequireAuth, RequireRole } from './auth/RequireAuth';
 import { AppLayout } from './components/layout/AppLayout';
 import { PublicCatalogLayout } from './features/public-catalog/PublicCatalogLayout';
 
@@ -17,7 +17,10 @@ const router = createBrowserRouter([
     path: '/catalogo',
     element: <PublicCatalogLayout />,
     children: [
-      { index: true, lazy: lazyPage(() => import('./features/public-catalog/PublicProductsPage'), 'PublicProductsPage') },
+      {
+        index: true,
+        lazy: lazyPage(() => import('./features/public-catalog/PublicProductsPage'), 'PublicProductsPage'),
+      },
       {
         path: 'produtos/:slug',
         lazy: lazyPage(() => import('./features/public-catalog/PublicProductPage'), 'PublicProductPage'),
@@ -46,18 +49,11 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: '/', element: <DashboardPage /> },
-          { path: '/produtos', lazy: lazyPage(() => import('./features/products/ProductsPage'), 'ProductsPage') },
-          {
-            path: '/produtos/novo',
-            lazy: lazyPage(() => import('./features/products/ProductFormPages'), 'NewProductPage'),
-          },
+          { path: '/produtos', lazy: lazyPage(() => import('./features/favorites/FavoritesPage'), 'FavoritesPage') },
+          { path: '/favoritos', lazy: lazyPage(() => import('./features/favorites/FavoritesPage'), 'FavoritesPage') },
           {
             path: '/produtos/:id',
             lazy: lazyPage(() => import('./features/products/ProductDetailPage'), 'ProductDetailPage'),
-          },
-          {
-            path: '/produtos/:id/editar',
-            lazy: lazyPage(() => import('./features/products/ProductFormPages'), 'EditProductPage'),
           },
           {
             path: '/ingredientes',
@@ -83,6 +79,10 @@ const router = createBrowserRouter([
           },
           { path: '/historico', lazy: lazyPage(() => import('./features/history/HistoryPage'), 'HistoryPage') },
           { path: '/conta', lazy: lazyPage(() => import('./features/account/AccountPage'), 'AccountPage') },
+          {
+            element: <RequireRole role="ADMIN" />,
+            children: [{ path: '/admin', lazy: lazyPage(() => import('./features/admin/AdminPage'), 'AdminPage') }],
+          },
           { path: '*', lazy: lazyPage(() => import('./features/NotFoundPage'), 'NotFoundPage') },
         ],
       },

@@ -1,6 +1,12 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AiStatus,
+  AdminIngredient,
+  AdminIngredientInput,
+  AdminProduct,
+  AdminProductInput,
+  AdminSearchSynonym,
+  AdminSearchSynonymInput,
   ChatMessage,
   Comparison,
   Conversation,
@@ -19,6 +25,9 @@ import type {
   PublicIngredientSummary,
   PublicProduct,
   PublicProductSearchPage,
+  FavoriteProduct,
+  RecommendationRule,
+  RecommendationRuleInput,
 } from '../types/api';
 import { api, toQueryString } from './api';
 
@@ -46,6 +55,13 @@ export const queryKeys = {
   publicIngredients: (params: object) => ['public-catalog', 'ingredients', params] as const,
   publicIngredient: (id: string) => ['public-catalog', 'ingredient', id] as const,
   publicIngredientFunctions: ['public-catalog', 'ingredient-functions'] as const,
+  favorites: (page: number) => ['favorites', page] as const,
+  favoriteStatus: (id: string) => ['favorite-status', id] as const,
+  adminProducts: (params: object) => ['admin', 'products', params] as const,
+  adminProduct: (id: string) => ['admin', 'product', id] as const,
+  adminIngredients: (params: object) => ['admin', 'ingredients', params] as const,
+  adminSearchSynonyms: ['admin', 'search-synonyms'] as const,
+  adminRecommendationRules: ['admin', 'recommendation-rules'] as const,
 };
 
 // ---------- Catálogo público ----------
@@ -68,10 +84,9 @@ export const usePublicIngredients = (params: { q?: string; function?: string; pa
   useQuery({
     queryKey: queryKeys.publicIngredients(params),
     queryFn: () =>
-      api<Page<PublicIngredientSummary>>(
-        `/api/catalog/ingredients${toQueryString({ ...params, pageSize: 24 })}`,
-        { auth: false },
-      ),
+      api<Page<PublicIngredientSummary>>(`/api/catalog/ingredients${toQueryString({ ...params, pageSize: 24 })}`, {
+        auth: false,
+      }),
     placeholderData: keepPreviousData,
   });
 
@@ -88,6 +103,167 @@ export const usePublicIngredientFunctions = () =>
     queryFn: () => api<string[]>('/api/catalog/ingredients/functions', { auth: false }),
     staleTime: 5 * 60_000,
   });
+
+// ---------- Favoritos ----------
+export const useFavorites = (page = 1, pageSize = 12) =>
+  useQuery({
+    queryKey: queryKeys.favorites(page),
+    queryFn: () => api<Page<FavoriteProduct>>(`/api/favorites${toQueryString({ page, pageSize })}`),
+    placeholderData: keepPreviousData,
+  });
+
+export const useFavoriteStatus = (productId: string | undefined, enabled = true) =>
+  useQuery({
+    queryKey: queryKeys.favoriteStatus(productId ?? ''),
+    queryFn: () => api<{ isFavorite: boolean }>(`/api/favorites/${productId}`),
+    enabled: Boolean(productId && enabled),
+  });
+
+export function useSetFavorite(productId: string) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (isFavorite: boolean) =>
+      isFavorite
+        ? api<void>(`/api/favorites/${productId}`, { method: 'DELETE' })
+        : api<void>(`/api/favorites/${productId}`, { method: 'PUT' }),
+    onSuccess: () => invalidate(['favorites'], queryKeys.favoriteStatus(productId)),
+  });
+}
+
+// ---------- Administração ----------
+export const useAdminProducts = (params: ProductListParams) =>
+  useQuery({
+    queryKey: queryKeys.adminProducts(params),
+    queryFn: () => api<PublicProductSearchPage>(`/api/admin/products${toQueryString({ ...params })}`),
+    placeholderData: keepPreviousData,
+  });
+
+export const useAdminProduct = (id: string | undefined) =>
+  useQuery({
+    queryKey: queryKeys.adminProduct(id ?? ''),
+    queryFn: () => api<AdminProduct>(`/api/admin/products/${id}`),
+    enabled: Boolean(id),
+  });
+
+export function useSaveAdminProduct(id?: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: AdminProductInput) =>
+      id
+        ? api<AdminProduct>(`/api/admin/products/${id}`, { method: 'PUT', body: input })
+        : api<AdminProduct>('/api/admin/products', { method: 'POST', body: input }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ['admin', 'products'] });
+      await client.invalidateQueries({ queryKey: ['public-catalog', 'products'] });
+    },
+  });
+}
+
+export function useDeleteAdminProduct() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/api/admin/products/${id}`, { method: 'DELETE' }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ['admin', 'products'] });
+      await client.invalidateQueries({ queryKey: ['public-catalog', 'products'] });
+      await client.invalidateQueries({ queryKey: ['favorites'] });
+    },
+  });
+}
+
+export const useAdminIngredients = (params: { q?: string; page?: number; pageSize?: number }) =>
+  useQuery({
+    queryKey: queryKeys.adminIngredients(params),
+    queryFn: () => api<Page<AdminIngredient>>(`/api/admin/ingredients${toQueryString(params)}`),
+    placeholderData: keepPreviousData,
+  });
+
+export function useSaveAdminIngredient(id?: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: AdminIngredientInput) =>
+      id
+        ? api<AdminIngredient>(`/api/admin/ingredients/${id}`, { method: 'PUT', body: input })
+        : api<AdminIngredient>('/api/admin/ingredients', { method: 'POST', body: input }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ['admin', 'ingredients'] });
+      await client.invalidateQueries({ queryKey: ['public-catalog', 'ingredients'] });
+    },
+  });
+}
+
+export function useDeleteAdminIngredient() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/api/admin/ingredients/${id}`, { method: 'DELETE' }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ['admin', 'ingredients'] });
+      await client.invalidateQueries({ queryKey: ['public-catalog', 'ingredients'] });
+    },
+  });
+}
+
+export const useAdminSearchSynonyms = () =>
+  useQuery({
+    queryKey: queryKeys.adminSearchSynonyms,
+    queryFn: () => api<AdminSearchSynonym[]>('/api/admin/search-synonyms'),
+  });
+
+export function useSaveAdminSearchSynonym(id?: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: AdminSearchSynonymInput) =>
+      id
+        ? api<AdminSearchSynonym>(`/api/admin/search-synonyms/${id}`, { method: 'PUT', body: input })
+        : api<AdminSearchSynonym>('/api/admin/search-synonyms', { method: 'POST', body: input }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.adminSearchSynonyms });
+      await client.invalidateQueries({ queryKey: ['public-catalog', 'products'] });
+    },
+  });
+}
+
+export function useDeleteAdminSearchSynonym() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/api/admin/search-synonyms/${id}`, { method: 'DELETE' }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.adminSearchSynonyms });
+      await client.invalidateQueries({ queryKey: ['public-catalog', 'products'] });
+    },
+  });
+}
+
+export const useAdminRecommendationRules = () =>
+  useQuery({
+    queryKey: queryKeys.adminRecommendationRules,
+    queryFn: () => api<RecommendationRule[]>('/api/admin/recommendation-rules'),
+  });
+
+export function useSaveAdminRecommendationRule(id?: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (input: RecommendationRuleInput) =>
+      id
+        ? api<RecommendationRule>(`/api/admin/recommendation-rules/${id}`, { method: 'PUT', body: input })
+        : api<RecommendationRule>('/api/admin/recommendation-rules', { method: 'POST', body: input }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.adminRecommendationRules });
+      await client.invalidateQueries({ queryKey: ['public-catalog', 'products'] });
+    },
+  });
+}
+
+export function useDeleteAdminRecommendationRule() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<void>(`/api/admin/recommendation-rules/${id}`, { method: 'DELETE' }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: queryKeys.adminRecommendationRules });
+      await client.invalidateQueries({ queryKey: ['public-catalog', 'products'] });
+    },
+  });
+}
 
 // ---------- Dashboard ----------
 export const useDashboard = () =>

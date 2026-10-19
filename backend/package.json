@@ -17,6 +17,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:seed-public": "tsx prisma/seed-public.ts",
+    "db:migrate-personal-products": "tsx scripts/migrate-personal-products.ts",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
     "benchmark:catalog-search": "tsx scripts/benchmark-catalog-search.ts",
     "db:reset": "prisma migrate reset"

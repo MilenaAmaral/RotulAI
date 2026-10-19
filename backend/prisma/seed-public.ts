@@ -4,6 +4,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { z } from 'zod';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 import { ProductCategory } from '../src/generated/prisma/enums.js';
+import { slugify } from '../src/lib/slugify.js';
 import { resolveIngredientIds } from '../src/modules/ingredients/ingredient-resolver.js';
 import { CATALOG_SEARCH_SYNONYMS } from './search-synonyms.js';
 
@@ -26,15 +27,6 @@ const catalogSchema = z.object({
     }),
   ),
 });
-
-function slugify(value: string): string {
-  return value
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
 
 async function seedPublicCatalog(): Promise<number> {
   const file = new URL('./data/catalogo-produtos.json', import.meta.url);

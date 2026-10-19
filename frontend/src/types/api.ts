@@ -11,6 +11,9 @@ export type ProductCategory =
   | 'TRATAMENTO'
   | 'OUTRO';
 
+export type SkinType = 'OILY' | 'DRY' | 'COMBINATION' | 'SENSITIVE' | 'NORMAL';
+export type SkinConcern = 'ACNE_PRONE' | 'PIGMENTATION' | 'DEHYDRATION' | 'SENSITIVITY' | 'SUN_PROTECTION';
+
 export interface User {
   id: string;
   name: string;
@@ -89,6 +92,81 @@ export interface PublicProduct {
   category: ProductCategory;
   referenceUrl: string | null;
   ingredients: ProductIngredient[];
+}
+
+export interface AdminProduct {
+  id: string;
+  slug: string;
+  name: string;
+  brand: string;
+  category: ProductCategory;
+  referenceUrl: string | null;
+  ingredients: Array<{ position: number; ingredient: IngredientSummary }>;
+}
+
+export interface FavoriteProduct extends PublicProductListItem {
+  referenceUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+  favoritedAt: string;
+}
+
+export interface AdminProductInput {
+  name: string;
+  brand: string;
+  category: ProductCategory;
+  referenceUrl: string | null;
+  ingredients: string[];
+}
+
+export interface AdminIngredientInput {
+  name: string;
+  synonyms: string[];
+  functions: string[];
+  description: string | null;
+  usageInfo: string | null;
+  cautions: string | null;
+  sources: Array<{ title: string; publisher: string; url: string; note: string | null }>;
+}
+
+export interface AdminIngredient extends IngredientDetail {
+  normalizedName: string;
+  searchTerms: string[];
+}
+
+export interface AdminSearchSynonym {
+  id: string;
+  phrase: string;
+  normalizedPhrase: string;
+  expansions: string[];
+  category: ProductCategory | null;
+}
+
+export interface AdminSearchSynonymInput {
+  phrase: string;
+  expansions: string[];
+  category: ProductCategory | null;
+}
+
+export interface RecommendationRule {
+  id: string;
+  ingredientId: string;
+  skinType: SkinType;
+  concern: SkinConcern;
+  rationale: string;
+  justification: string;
+  version: number;
+  isActive: boolean;
+  ingredient: { id: string; name: string; isCurated: boolean };
+}
+
+export interface RecommendationRuleInput {
+  ingredientId: string;
+  skinType: SkinType;
+  concern: SkinConcern;
+  rationale: string;
+  justification: string;
+  isActive: boolean;
 }
 
 export interface PublicIngredientSummary {

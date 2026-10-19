@@ -68,6 +68,22 @@ export async function listProducts(userId: string, query: ProductListQuery) {
   return buildPage(items, total, query.page, query.pageSize);
 }
 
+export async function exportLegacyProducts(userId: string) {
+  return prisma.product.findMany({
+    where: { userId },
+    include: {
+      ingredients: {
+        orderBy: { position: 'asc' },
+        select: {
+          position: true,
+          ingredient: { select: { name: true, normalizedName: true } },
+        },
+      },
+    },
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+  });
+}
+
 /** Busca sempre filtrando por userId: produtos de outros usuários resultam em 404. */
 export async function findOwnedProduct(userId: string, productId: string): Promise<ProductWithIngredients> {
   const product = await prisma.product.findFirst({

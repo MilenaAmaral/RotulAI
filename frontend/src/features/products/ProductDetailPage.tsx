@@ -1,26 +1,18 @@
-import { ArrowLeftRight, MessageCircle, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { ArrowLeftRight, MessageCircle } from 'lucide-react';
+import { useParams } from 'react-router';
 import { Badge } from '../../components/ui/Badge';
-import { Button, ButtonLink } from '../../components/ui/Button';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { ButtonLink } from '../../components/ui/Button';
 import { IngredientChips } from '../../components/ui/IngredientChips';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { LoadingBlock } from '../../components/ui/Spinner';
 import { ErrorState } from '../../components/ui/States';
-import { useToast } from '../../components/ui/toast-context';
-import { errorMessage } from '../../lib/api';
 import { CATEGORY_LABELS, formatDate, pluralize } from '../../lib/format';
-import { useDeleteProduct, useProduct } from '../../lib/queries';
+import { useProduct } from '../../lib/queries';
 import { ProductThumb } from './ProductThumb';
 
 export function ProductDetailPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const product = useProduct(id);
-  const remove = useDeleteProduct();
-  const { notify } = useToast();
-  const [confirming, setConfirming] = useState(false);
 
   if (product.isLoading) return <LoadingBlock />;
   if (product.isError || !product.data) {
@@ -36,37 +28,9 @@ export function ProductDetailPage() {
   const uncuratedIds = new Set(data.ingredients.filter((item) => !item.isCurated).map((item) => item.id));
   const curatedCount = data.ingredients.length - uncuratedIds.size;
 
-  const handleDelete = async () => {
-    try {
-      await remove.mutateAsync(data.id);
-      notify('Produto excluído.');
-      navigate('/produtos', { replace: true });
-    } catch (error) {
-      notify(errorMessage(error), 'error');
-      setConfirming(false);
-    }
-  };
-
   return (
     <>
-      <PageHeader
-        title={data.name}
-        back={{ to: '/produtos', label: 'Catálogo' }}
-        actions={
-          <>
-            <ButtonLink
-              to={`/produtos/${data.id}/editar`}
-              variant="secondary"
-              icon={<Pencil size={16} aria-hidden="true" />}
-            >
-              Editar
-            </ButtonLink>
-            <Button variant="danger" onClick={() => setConfirming(true)} icon={<Trash2 size={16} aria-hidden="true" />}>
-              Excluir
-            </Button>
-          </>
-        }
-      />
+      <PageHeader title={data.name} back={{ to: '/favoritos', label: 'Favoritos' }} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="flex flex-col gap-6">
@@ -154,16 +118,6 @@ export function ProductDetailPage() {
           </ButtonLink>
         </aside>
       </div>
-
-      <ConfirmDialog
-        open={confirming}
-        title="Excluir produto?"
-        description={`"${data.name}" será removido do seu catálogo. Comparações já realizadas continuam no histórico. Esta ação não pode ser desfeita.`}
-        confirmLabel="Excluir produto"
-        loading={remove.isPending}
-        onConfirm={() => void handleDelete()}
-        onCancel={() => setConfirming(false)}
-      />
     </>
   );
 }

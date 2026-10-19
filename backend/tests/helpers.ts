@@ -1,8 +1,11 @@
 import type { Express } from 'express';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
+import { AccessProfile } from '../src/generated/prisma/enums.js';
 import { prisma } from '../src/lib/prisma.js';
 import { AiService } from '../src/modules/ai/ai.service.js';
+import { resolveIngredientIds } from '../src/modules/ingredients/ingredient-resolver.js';
+import { productInputSchema } from '../src/modules/products/products.schemas.js';
 import type { LlmProvider, LlmRequest, LlmResponse } from '../src/modules/ai/llm-provider.js';
 
 /** Provedor de IA de teste: registra chamadas e devolve a resposta configurada. Usado apenas nos testes. */
@@ -75,12 +78,34 @@ export const validProduct = (overrides: Record<string, unknown> = {}) => ({
 });
 
 export async function createProduct(app: Express, user: TestUser, overrides: Record<string, unknown> = {}) {
+  const input = productInputSchema.parse(validProduct(overrides));
+  const product = await prisma.$transaction(async (tx) => {
+    const ingredientIds = await resolveIngredientIds(tx, input.ingredients);
+    return tx.product.create({
+      data: {
+        userId: user.id,
+        name: input.name,
+        brand: input.brand,
+        category: input.category,
+        description: input.description,
+        imageUrl: input.imageUrl,
+        referenceUrl: input.referenceUrl,
+        ingredients: {
+          create: ingredientIds.map((ingredientId, index) => ({ ingredientId, position: index + 1 })),
+        },
+      },
+      include: { ingredients: { include: { ingredient: { select: { id: true, name: true } } } } },
+    });
+  });
   const response = await request(app)
-    .post('/api/products')
+    .get(`/api/products/${product.id}`)
     .set('Authorization', `Bearer ${user.token}`)
-    .send(validProduct(overrides))
-    .expect(201);
+    .expect(200);
   return response.body as { id: string; ingredients: Array<{ id: string; name: string }> };
+}
+
+export async function promoteUserToAdmin(user: TestUser): Promise<void> {
+  await prisma.user.update({ where: { id: user.id }, data: { role: AccessProfile.ADMIN } });
 }
 
 export { prisma };

@@ -6,6 +6,7 @@ import {
   createProduct,
   createTestApp,
   prisma,
+  promoteUserToAdmin,
   registerUser,
   replyWith,
   resetDatabase,
@@ -23,6 +24,8 @@ describe('isolamento de dados entre usuários', () => {
   it('impede ler, editar ou excluir produtos de outro usuário alterando o id', async () => {
     const owner = await registerUser(app, 'Dona');
     const intruder = await registerUser(app, 'Intrusa');
+    await promoteUserToAdmin(owner);
+    await promoteUserToAdmin(intruder);
     const product = await createProduct(app, owner, { name: 'Produto Privado' });
 
     await request(app).get(`/api/products/${product.id}`).set(as(intruder)).expect(404);
