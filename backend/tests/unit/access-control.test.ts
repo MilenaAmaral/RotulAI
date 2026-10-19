@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { AccessProfile } from '../../src/generated/prisma/enums.js';
 import { AppError } from '../../src/lib/errors.js';
 import { requireRole } from '../../src/middleware/auth.js';
@@ -12,13 +12,19 @@ function requestWithRole(role?: AccessProfile): Request {
 
 describe('autorização por perfil', () => {
   it('permite o perfil exigido', () => {
-    const next = vi.fn<NextFunction>();
+    let nextCalled = false;
+    const next: NextFunction = () => {
+      nextCalled = true;
+    };
     requireRole(AccessProfile.ADMIN)(requestWithRole(AccessProfile.ADMIN), {} as Response, next);
-    expect(next).toHaveBeenCalledOnce();
+    expect(nextCalled).toBe(true);
   });
 
   it('retorna 403 para um perfil autenticado sem permissão', () => {
-    const next = vi.fn<NextFunction>();
+    let nextCalled = false;
+    const next: NextFunction = () => {
+      nextCalled = true;
+    };
     try {
       requireRole(AccessProfile.ADMIN)(requestWithRole(AccessProfile.FREE), {} as Response, next);
       throw new Error('A autorização deveria ter sido negada.');
@@ -26,11 +32,14 @@ describe('autorização por perfil', () => {
       expect(error).toBeInstanceOf(AppError);
       expect((error as AppError).statusCode).toBe(403);
     }
-    expect(next).not.toHaveBeenCalled();
+    expect(nextCalled).toBe(false);
   });
 
   it('retorna 401 quando não há perfil autenticado', () => {
-    const next = vi.fn<NextFunction>();
+    let nextCalled = false;
+    const next: NextFunction = () => {
+      nextCalled = true;
+    };
     try {
       requireRole(AccessProfile.ADMIN)(requestWithRole(), {} as Response, next);
       throw new Error('A autorização deveria exigir autenticação.');
@@ -38,6 +47,6 @@ describe('autorização por perfil', () => {
       expect(error).toBeInstanceOf(AppError);
       expect((error as AppError).statusCode).toBe(401);
     }
-    expect(next).not.toHaveBeenCalled();
+    expect(nextCalled).toBe(false);
   });
 });

@@ -44,6 +44,22 @@ enum AccessProfile {
   ADMIN
 }
 
+enum SkinType {
+  OILY
+  DRY
+  COMBINATION
+  SENSITIVE
+  NORMAL
+}
+
+enum SkinConcern {
+  ACNE_PRONE
+  PIGMENTATION
+  DEHYDRATION
+  SENSITIVITY
+  SUN_PROTECTION
+}
+
 model User {
   id           String   @id @default(uuid()) @db.Uuid
   name         String   @db.VarChar(80)
@@ -154,6 +170,24 @@ model CatalogSearchSynonym {
   @@index([category])
 }
 
+model RecommendationRule {
+  id            String      @id @default(uuid()) @db.Uuid
+  ingredientId  String      @db.Uuid
+  skinType      SkinType
+  concern       SkinConcern
+  rationale     String      @db.VarChar(500)
+  justification String      @db.VarChar(1200)
+  version       Int         @default(1)
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@unique([ingredientId, skinType, concern])
+  @@index([skinType, concern, isActive])
+}
+
 model Ingredient {
   id             String   @id @default(uuid()) @db.Uuid
   // Nome de exibição (geralmente a nomenclatura INCI).
@@ -176,6 +210,7 @@ model Ingredient {
   sources  IngredientSource[]
   products ProductIngredient[]
   catalogProducts CatalogProductIngredient[]
+  recommendationRules RecommendationRule[]
   analyses IngredientAnalysis[]
 
   @@index([searchTerms], type: Gin)

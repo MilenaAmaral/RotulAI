@@ -10,6 +10,14 @@ Base: `/api`. Documentação interativa em `/api/docs` (Swagger UI) e especifica
 
 ## Formato de erro
 
+### Perfis
+
+O cadastro cria sempre o perfil `FREE`. Visitantes acessam somente o catálogo público; usuários autenticados podem
+gerenciar os próprios favoritos. Somente `ADMIN` pode alterar o catálogo global, ingredientes curados, regras de
+indicação e sinônimos. A autorização é aplicada no backend.
+
+### Resposta de erro
+
 ```json
 {
   "error": {
@@ -24,7 +32,7 @@ Base: `/api`. Documentação interativa em `/api/docs` (Swagger UI) e especifica
 | ---- | -------------------------------------- | ------------------------------------------------- |
 | 400  | `VALIDATION_ERROR`                     | Entrada inválida, JSON malformado, id malformado  |
 | 401  | `UNAUTHORIZED`                         | Sem token, token expirado, credenciais incorretas |
-| 403  | `FORBIDDEN`                            | Senha incorreta ou perfil sem permissão             |
+| 403  | `FORBIDDEN`                            | Senha incorreta ou perfil sem permissão           |
 | 404  | `NOT_FOUND`                            | Recurso inexistente **ou de outro usuário**       |
 | 409  | `CONFLICT`                             | E-mail já cadastrado                              |
 | 413  | `VALIDATION_ERROR`                     | Corpo acima de 64 KB                              |
@@ -46,24 +54,52 @@ Listas aceitam `page` (padrão 1) e `pageSize` (padrão 12, máximo 50) e retorn
 
 O catálogo público é independente dos produtos pessoais. As páginas `/catalogo` e `/catalogo/ingredientes` consultam estes endpoints sem enviar token:
 
-| Método | Rota | Parâmetros | Descrição |
-| --- | --- | --- | --- |
-| GET | `/catalog/products` | `q`, `category`, `page`, `pageSize` | Busca aproximada em nome, marca, categoria e ingredientes; filtra por categoria. |
-| GET | `/catalog/products/:slug` | — | Detalhes, ingredientes na ordem da lista e link de referência. |
-| GET | `/catalog/ingredients` | `q`, `function`, `page`, `pageSize` | Pesquisa ingredientes curados por nome/sinônimo e filtra por função. |
-| GET | `/catalog/ingredients/functions` | — | Funções disponíveis para o filtro. |
-| GET | `/catalog/ingredients/:id` | — | Detalhe curado com funções, informações e fontes. |
+| Método | Rota                             | Parâmetros                          | Descrição                                                                        |
+| ------ | -------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------- |
+| GET    | `/catalog/products`              | `q`, `category`, `page`, `pageSize` | Busca aproximada em nome, marca, categoria e ingredientes; filtra por categoria. |
+| GET    | `/catalog/products/:slug`        | —                                   | Detalhes, ingredientes na ordem da lista e link de referência.                   |
+| GET    | `/catalog/ingredients`           | `q`, `function`, `page`, `pageSize` | Pesquisa ingredientes curados por nome/sinônimo e filtra por função.             |
+| GET    | `/catalog/ingredients/functions` | —                                   | Funções disponíveis para o filtro.                                               |
+| GET    | `/catalog/ingredients/:id`       | —                                   | Detalhe curado com funções, informações e fontes.                                |
 
 O endpoint de detalhe público de ingrediente retorna 404 quando o registro não está curado. Nenhum destes endpoints retorna `userId` ou produtos do catálogo pessoal. A lista de produtos do catálogo público é alimentada separadamente por `npm run db:seed-public -w backend`; o comando faz upsert dos registros e vínculos, sem excluir dados.
 
 A listagem de produtos retorna a página de resultados e `suggestions`, uma lista separada para a mensagem “Você quis dizer…” quando não há correspondência exata. A expansão usa a tabela `CatalogSearchSynonym`; consulte [docs/BUSCA-CATALOGO.md](./BUSCA-CATALOGO.md) para sinônimos, consultas de regressão e benchmark.
 
+## Favoritos (usuário autenticado)
+
+| Método | Rota                       | Descrição                                                    |
+| ------ | -------------------------- | ------------------------------------------------------------ |
+| GET    | `/favorites?page&pageSize` | Lista os favoritos da conta autenticada.                     |
+| GET    | `/favorites/:productId`    | Informa `{ "isFavorite": boolean }` para um produto público. |
+| PUT    | `/favorites/:productId`    | Salva o produto; operação idempotente.                       |
+| DELETE | `/favorites/:productId`    | Remove o favorito; repetição também é segura.                |
+
+Visitantes recebem `401`; favoritos são isolados por conta. Os registros pessoais legados não são publicados como
+favoritos sem correspondência exata. A migração conserva os registros divergentes em privado e os disponibiliza para
+exportação em `GET /products/archive/export`.
+
+## Administração (perfil `ADMIN`)
+
+Todas as rotas `/admin/*` exigem autenticação e perfil `ADMIN`; visitantes recebem `401` e outros perfis recebem
+`403`. Os corpos são validados com Zod.
+
+| Recurso              | Listar/consultar                  | Criar                              | Editar                                | Excluir                                  |
+| -------------------- | --------------------------------- | ---------------------------------- | ------------------------------------- | ---------------------------------------- |
+| Catálogo público     | `GET /admin/products`             | `POST /admin/products`             | `GET` e `PUT /admin/products/:id`     | `DELETE /admin/products/:id`             |
+| Ingredientes curados | `GET /admin/ingredients`          | `POST /admin/ingredients`          | `PUT /admin/ingredients/:id`          | `DELETE /admin/ingredients/:id`          |
+| Sinônimos de busca   | `GET /admin/search-synonyms`      | `POST /admin/search-synonyms`      | `PUT /admin/search-synonyms/:id`      | `DELETE /admin/search-synonyms/:id`      |
+| Regras de indicação  | `GET /admin/recommendation-rules` | `POST /admin/recommendation-rules` | `PUT /admin/recommendation-rules/:id` | `DELETE /admin/recommendation-rules/:id` |
+
+A exclusão de ingrediente em uso retorna `409`. Regras só aceitam ingredientes curados e a edição incrementa sua
+versão. A justificativa editorial é armazenada com a regra para revisão.
+
 ## Exemplos
 
-### Cadastrar produto
+### Cadastrar produto no catálogo público (Admin)
 
 ```http
-POST /api/products
+POST /api/admin/products
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -71,13 +107,15 @@ Content-Type: application/json
   "name": "Sérum Hidratante",
   "brand": "Marca Fictícia",
   "category": "SERUM",
-  "description": "Opcional",
-  "imageUrl": "https://exemplo.com/foto.jpg",
+  "referenceUrl": "https://exemplo.org/produto",
   "ingredients": ["Aqua", "Glycerin", "Sodium Hyaluronate"]
 }
 ```
 
 Categorias: `LIMPEZA`, `TONICO`, `SERUM`, `HIDRATANTE`, `PROTETOR_SOLAR`, `ESFOLIANTE`, `MASCARA`, `OLHOS`, `LABIOS`, `TRATAMENTO`, `OUTRO`.
+
+As rotas legadas `/products` operam sobre dados pessoais arquivados. Criação, edição e exclusão também exigem perfil
+`ADMIN`; o fluxo normal da pessoa usuária é favoritar itens de `/catalog`.
 
 ### Consultar ingrediente
 

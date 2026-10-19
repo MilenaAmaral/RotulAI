@@ -10,6 +10,7 @@ import { CATEGORY_LABELS, CATEGORY_OPTIONS, pluralize } from '../../lib/format';
 import { usePublicProducts } from '../../lib/queries';
 import type { ProductCategory } from '../../types/api';
 import { SeoMeta } from './SeoMeta';
+import { FavoriteButton } from './FavoriteButton';
 
 function isCategory(value: string): value is ProductCategory {
   return Object.hasOwn(CATEGORY_LABELS, value);
@@ -130,17 +131,19 @@ export function PublicProductsPage() {
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {products.data.items.map((product) => (
               <li key={product.id}>
-                <Link
-                  to={`/catalogo/produtos/${product.slug}`}
-                  className="panel block h-full p-5 transition-colors hover:border-brand-accent"
-                >
-                  <span className="text-sm text-ink-soft">{product.brand}</span>
-                  <span className="mt-1 block font-semibold">{product.name}</span>
-                  <span className="mt-3 block text-sm text-ink-soft">
-                    {CATEGORY_LABELS[product.category]} ·{' '}
-                    {pluralize(product.ingredientCount, 'ingrediente', 'ingredientes')}
-                  </span>
-                </Link>
+                <article className="panel flex h-full flex-col p-5 transition-colors hover:border-brand-accent">
+                  <Link to={`/catalogo/produtos/${product.slug}`} className="flex-1">
+                    <span className="text-sm text-ink-soft">{product.brand}</span>
+                    <span className="mt-1 block font-semibold">{product.name}</span>
+                    <span className="mt-3 block text-sm text-ink-soft">
+                      {CATEGORY_LABELS[product.category]} ·{' '}
+                      {pluralize(product.ingredientCount, 'ingrediente', 'ingredientes')}
+                    </span>
+                  </Link>
+                  <div className="mt-3">
+                    <FavoriteButton productId={product.id} />
+                  </div>
+                </article>
               </li>
             ))}
           </ul>
