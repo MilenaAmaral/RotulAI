@@ -307,9 +307,3 @@ export const INGREDIENTS: SeedIngredient[] = [
     cautions: 'Pode causar ardência em pele com fissuras ou sensível, especialmente em concentrações mais altas.',
   },
 ];
-
-export const DEMO_USER = {
-  name: 'Usuária Demonstração',
-  email: 'demo@rotulai.dev',
-  password: 'Demo@12345',
-};

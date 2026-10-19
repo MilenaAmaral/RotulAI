@@ -37,7 +37,8 @@ Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas 
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Autenticação**       | Cadastro, login, sessão persistente com rotação de refresh token, logout e exclusão de conta com todos os dados.                                                                                                                                                                    |
 | **Dashboard**          | Saudação, indicadores reais (produtos, ingredientes consultados, comparações, conversas), atividade recente, produtos por categoria e acessos rápidos.                                                                                                                              |
-| **Catálogo**           | Listagem paginada, cadastro, edição, exclusão com confirmação, busca por nome ou marca, filtro por categoria e página de detalhes. Ingredientes são extraídos do texto do rótulo e vinculados ao catálogo global sem duplicação (inclusive por sinônimo: "Glicerina" = "Glycerin"). |
+| **Catálogo público**   | Páginas sem login em `/catalogo` e `/catalogo/ingredientes`, com busca tolerante a erros de digitação, sugestões, filtros, fontes e metadados por página. Usa um conjunto público separado dos catálogos pessoais. |
+| **Catálogo pessoal**   | Listagem paginada, cadastro, edição, exclusão com confirmação, busca por nome ou marca, filtro por categoria e detalhes, sempre protegido por login. Ingredientes são vinculados ao catálogo global sem duplicação (inclusive por sinônimo: "Glicerina" = "Glycerin"). |
 | **Ingredientes**       | Consulta por nome INCI ou nome comum, base de referência com 30 ingredientes revisados, sinônimos, funções, uso, cuidados e fontes. Conteúdo da base e explicação da IA aparecem em blocos separados. Quando não há informação confiável, a interface informa a limitação.          |
 | **Comparador**         | Ingredientes em comum, exclusivos de cada produto, marca, categoria, descrições e percentual de sobreposição (índice de Jaccard). A IA pode explicar as diferenças, sem declarar qual produto é melhor.                                                                             |
 | **Assistente Rotulai** | Chat com histórico, sugestões iniciais, contexto opcional de até 2 produtos do catálogo, limite de caracteres, indicador de digitação e mensagens claras de indisponibilidade.                                                                                                      |
@@ -156,9 +157,12 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```bash
 npm run db:migrate   # aplica as migrações (prisma migrate dev)
 npm run db:seed      # base de referência + catálogo com 101 produtos reais
+npm run db:seed-public -w backend # popula/atualiza apenas o catálogo público, sem apagar dados pessoais
 ```
 
 Acesso de demonstração (usuária fictícia): **demo@rotulai.dev** / **Demo@12345**.
+
+O seed público é idempotente e atualiza apenas os registros do catálogo público e seus vínculos de ingredientes. Ele não remove usuários nem produtos pessoais.
 
 ### Catálogo de demonstração
 
@@ -258,6 +262,8 @@ Documentação interativa (Swagger UI): `http://localhost:3333/api/docs` · espe
 | GET / POST          | `/api/products`                                          | Listar (busca, categoria, paginação) / cadastrar |
 | GET / PUT / DELETE  | `/api/products/:id`                                      | Detalhar / editar / excluir                      |
 | GET                 | `/api/ingredients` · `/api/ingredients/:id`              | Base de ingredientes                             |
+| GET                 | `/api/catalog/products` · `/api/catalog/products/:slug`  | Catálogo público, busca/filtro e detalhe (sem login) |
+| GET                 | `/api/catalog/ingredients` · `/api/catalog/ingredients/:id` | Ingredientes curados públicos, busca/filtro e detalhe (sem login) |
 | GET / POST / DELETE | `/api/ingredient-analyses`                               | Histórico / nova consulta / limpar               |
 | POST                | `/api/ingredient-analyses/:id/explanation`               | Explicação por IA                                |
 | GET / POST / DELETE | `/api/comparisons`                                       | Histórico / comparar / limpar                    |

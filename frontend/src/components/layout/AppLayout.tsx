@@ -1,12 +1,14 @@
 import {
   ArrowLeftRight,
+  BookOpen,
   FlaskConical,
+  Heart,
   History,
   LayoutGrid,
   LogOut,
   Menu,
   MessageCircle,
-  Package,
+  ShieldCheck,
   UserRound,
   X,
 } from 'lucide-react';
@@ -18,17 +20,21 @@ import { Logo } from '../ui/Logo';
 
 const navItems = [
   { to: '/', label: 'Início', icon: LayoutGrid, end: true },
-  { to: '/produtos', label: 'Catálogo', icon: Package },
-  { to: '/ingredientes', label: 'Ingredientes', icon: FlaskConical },
+  { to: '/catalogo', label: 'Catálogo público', icon: BookOpen },
+  { to: '/favoritos', label: 'Favoritos', icon: Heart },
+  { to: '/catalogo/ingredientes', label: 'Ingredientes', icon: FlaskConical },
   { to: '/comparar', label: 'Comparador', icon: ArrowLeftRight },
   { to: '/assistente', label: 'Assistente', icon: MessageCircle },
   { to: '/historico', label: 'Histórico', icon: History },
 ];
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
+  const { user } = useAuth();
+  const items =
+    user?.role === 'ADMIN' ? [...navItems, { to: '/admin', label: 'Administração', icon: ShieldCheck }] : navItems;
   return (
     <ul className="flex flex-col gap-0.5">
-      {navItems.map(({ to, label, icon: Icon, end }) => (
+      {items.map(({ to, label, icon: Icon, end }) => (
         <li key={to}>
           <NavLink
             to={to}

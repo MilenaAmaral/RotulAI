@@ -1,6 +1,14 @@
 import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { createProduct, createTestApp, prisma, registerUser, resetDatabase, validProduct } from '../helpers.js';
+import {
+  createProduct,
+  createTestApp,
+  prisma,
+  promoteUserToAdmin,
+  registerUser,
+  resetDatabase,
+  validProduct,
+} from '../helpers.js';
 
 const app = createTestApp();
 
@@ -10,6 +18,7 @@ afterAll(() => prisma.$disconnect());
 describe('catálogo de produtos', () => {
   it('cria, detalha, edita e exclui um produto', async () => {
     const user = await registerUser(app);
+    await promoteUserToAdmin(user);
     const auth = { Authorization: `Bearer ${user.token}` };
 
     const created = await createProduct(app, user);
@@ -37,6 +46,14 @@ describe('catálogo de produtos', () => {
 
   it('retorna erros de validação por campo', async () => {
     const user = await registerUser(app);
+    const forbidden = await request(app)
+      .post('/api/products')
+      .set('Authorization', `Bearer ${user.token}`)
+      .send(validProduct())
+      .expect(403);
+    expect(forbidden.body.error.code).toBe('FORBIDDEN');
+
+    await promoteUserToAdmin(user);
     const response = await request(app)
       .post('/api/products')
       .set('Authorization', `Bearer ${user.token}`)
