@@ -18,16 +18,16 @@ Não existe endpoint público para alterar as regras. A API de leitura usa a tab
 
 O conjunto de dados desses casos usa somente os produtos presentes no catálogo de demonstração versionado no repositório. O teste verifica recuperação e sugestões; não avalia adequação de produto a pele ou condição clínica.
 
-| Entrada | Esperado |
-| --- | --- |
-| `serave hidratante` | CeraVe Moisturizing Cream entre os primeiros |
-| `hidratante cerave` | Mesmo produto com termos em ordem invertida |
-| `la roche` | Produtos da marca La Roche-Posay |
-| `protetor solar oleosa` | Produto(s) da categoria PROTETOR_SOLAR; não significa recomendação para pele oleosa |
-| `sabonete acne` | CeraVe Acne Control Cleanser entre os primeiros |
-| `acido hialuronico` | CeraVe Hydrating Facial Cleanser via ingrediente/sinônimo sem acento |
-| `ceraeve moiturizing crem` | Sugestão “Você quis dizer…” para CeraVe Moisturizing Cream |
-| `proteor solar` | Sugestões próximas da categoria PROTETOR_SOLAR |
+| Entrada                    | Esperado                                                                            |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `serave hidratante`        | CeraVe Moisturizing Cream entre os primeiros                                        |
+| `hidratante cerave`        | Mesmo produto com termos em ordem invertida                                         |
+| `la roche`                 | Produtos da marca La Roche-Posay                                                    |
+| `protetor solar oleosa`    | Produto(s) da categoria PROTETOR_SOLAR; não significa recomendação para pele oleosa |
+| `sabonete acne`            | CeraVe Acne Control Cleanser entre os primeiros                                     |
+| `acido hialuronico`        | CeraVe Hydrating Facial Cleanser via ingrediente/sinônimo sem acento                |
+| `ceraeve moiturizing crem` | Sugestão “Você quis dizer…” para CeraVe Moisturizing Cream                          |
+| `proteor solar`            | Sugestões próximas da categoria PROTETOR_SOLAR                                      |
 
 ## Medição
 
@@ -40,8 +40,8 @@ npm run benchmark:catalog-search -w backend
 
 Registre os valores observados nesta tabela junto com data, região, número de produtos e localização do runner. Não registre a URL nem credenciais:
 
-| Data | Ambiente/região | Produtos | Consulta | p50 (ms) | p95 (ms) |
-| --- | --- | ---: | --- | ---: | ---: |
-| Pendente de execução autorizada em Neon staging | Neon São Paulo | 101 (seed de demonstração) | Consultas da tabela acima | — | — |
+| Data                                            | Ambiente/região |                   Produtos | Consulta                  | p50 (ms) | p95 (ms) |
+| ----------------------------------------------- | --------------- | -------------------------: | ------------------------- | -------: | -------: |
+| Pendente de execução autorizada em Neon staging | Neon São Paulo  | 101 (seed de demonstração) | Consultas da tabela acima |        — |        — |
 
 Use `EXPLAIN (ANALYZE, BUFFERS)` em staging para confirmar a seleção dos índices trigram. As medições não são um limiar rígido de CI: latência de rede e estado do plano/cache variam; testes automatizados verificam resultados e ordenação.
