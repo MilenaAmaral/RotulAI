@@ -8,6 +8,7 @@ const result: ComparisonResult = {
   productA: { id: 'a', name: 'Sérum A', brand: 'Aurora', category: 'SERUM', description: null, ingredientCount: 3 },
   productB: {
     id: 'b',
+    slug: 'brisa-creme-b',
     name: 'Creme B',
     brand: 'Brisa',
     category: 'HIDRATANTE',
@@ -42,6 +43,17 @@ describe('ComparisonResultView', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Marca diferente')).toBeInTheDocument();
     expect(screen.getByText('Categoria diferente')).toBeInTheDocument();
+  });
+
+  it('leva produtos do catálogo à página pública e mantém o link legado sem slug', () => {
+    render(
+      <MemoryRouter>
+        <ComparisonResultView result={result} />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Creme B' })).toHaveAttribute('href', '/catalogo/produtos/brisa-creme-b');
+    expect(screen.getByRole('link', { name: 'Sérum A' })).toHaveAttribute('href', '/produtos/a');
   });
 
   it('deixa claro que a sobreposição não indica qual produto é melhor', () => {

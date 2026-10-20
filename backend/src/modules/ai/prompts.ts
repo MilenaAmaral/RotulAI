@@ -14,7 +14,7 @@ Regras obrigatórias:
 - Seja objetivo: prefira respostas curtas e organizadas em tópicos quando ajudar a leitura.`;
 
 export const CHAT_GUIDANCE = `Você pode: explicar termos de rótulos cosméticos, responder perguntas gerais sobre ingredientes,
-explicar diferenças entre produtos cadastrados pelo usuário (quando os dados forem fornecidos no contexto)
+explicar diferenças entre produtos do catálogo escolhidos pelo usuário (quando os dados forem fornecidos no contexto)
 e ajudar a organizar informações sobre uma rotina de skincare (ordem de aplicação, períodos do dia), sem prescrever.`;
 
 export const INGREDIENT_GUIDANCE = `Explique o ingrediente indicado em até 6 tópicos curtos: o que é, função cosmética comum,

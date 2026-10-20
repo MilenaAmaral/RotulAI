@@ -1,11 +1,10 @@
-import { ArrowLeftRight, MessageCircle } from 'lucide-react';
 import { useParams } from 'react-router';
 import { Badge } from '../../components/ui/Badge';
 import { ButtonLink } from '../../components/ui/Button';
 import { IngredientChips } from '../../components/ui/IngredientChips';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { LoadingBlock } from '../../components/ui/Spinner';
-import { ErrorState } from '../../components/ui/States';
+import { ErrorState, Notice } from '../../components/ui/States';
 import { CATEGORY_LABELS, formatDate, pluralize } from '../../lib/format';
 import { useProduct } from '../../lib/queries';
 import { ProductThumb } from './ProductThumb';
@@ -18,7 +17,7 @@ export function ProductDetailPage() {
   if (product.isError || !product.data) {
     return (
       <>
-        <PageHeader title="Produto" back={{ to: '/produtos', label: 'Catálogo' }} />
+        <PageHeader title="Produto" back={{ to: '/favoritos', label: 'Favoritos' }} />
         <ErrorState error={product.error} onRetry={() => void product.refetch()} />
       </>
     );
@@ -100,21 +99,12 @@ export function ProductDetailPage() {
         </div>
 
         <aside className="flex flex-col gap-3">
-          <ButtonLink
-            to={`/comparar?a=${data.id}`}
-            variant="secondary"
-            icon={<ArrowLeftRight size={16} aria-hidden="true" />}
-            className="justify-start"
-          >
-            Comparar com outro produto
-          </ButtonLink>
-          <ButtonLink
-            to={`/assistente?produto=${data.id}`}
-            variant="secondary"
-            icon={<MessageCircle size={16} aria-hidden="true" />}
-            className="justify-start"
-          >
-            Perguntar ao assistente
+          <Notice title="Registro arquivado">
+            Este produto foi cadastrado antes do catálogo público e fica disponível apenas para consulta. O comparador e
+            o assistente usam os produtos que você favorita no catálogo.
+          </Notice>
+          <ButtonLink to="/catalogo" variant="secondary" className="justify-start">
+            Explorar o catálogo
           </ButtonLink>
         </aside>
       </div>

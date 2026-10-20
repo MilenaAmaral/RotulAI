@@ -10,6 +10,8 @@ export interface ComparableIngredient {
 
 export interface ComparableProduct {
   id: string;
+  /** Slug do catálogo público; null em comparações antigas feitas com produtos pessoais. */
+  slug: string | null;
   name: string;
   brand: string;
   category: string;
@@ -31,6 +33,7 @@ export interface ComparisonResult {
 
 interface ProductSummary {
   id: string;
+  slug: string | null;
   name: string;
   brand: string;
   category: string;
@@ -43,6 +46,7 @@ const byPosition = (a: ComparableIngredient, b: ComparableIngredient) => a.posit
 function summarize(product: ComparableProduct): ProductSummary {
   return {
     id: product.id,
+    slug: product.slug,
     name: product.name,
     brand: product.brand,
     category: product.category,

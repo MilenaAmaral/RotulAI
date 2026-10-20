@@ -3,6 +3,7 @@ import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import type { TestUser } from '../helpers.js';
 import {
+  createCatalogProduct,
   createProduct,
   createTestApp,
   prisma,
@@ -43,22 +44,27 @@ describe('isolamento de dados entre usuários', () => {
     expect(stillThere.name).toBe('Produto Privado');
   });
 
-  it('impede comparar ou usar como contexto da IA produtos de outro usuário', async () => {
+  it('nunca usa produtos pessoais (de outro usuário ou próprios) na comparação ou no contexto da IA', async () => {
     const owner = await registerUser(app);
     const intruder = await registerUser(app);
     const foreign = await createProduct(app, owner);
     const own = await createProduct(app, intruder);
+    const publicProduct = await createCatalogProduct();
 
-    await request(app)
-      .post('/api/comparisons')
-      .set(as(intruder))
-      .send({ productAId: own.id, productBId: foreign.id })
-      .expect(404);
-    await request(app)
-      .post('/api/conversations')
-      .set(as(intruder))
-      .send({ message: 'Compare os produtos', productIds: [foreign.id] })
-      .expect(404);
+    for (const privateId of [foreign.id, own.id]) {
+      await request(app)
+        .post('/api/comparisons')
+        .set(as(intruder))
+        .send({ productAId: publicProduct.id, productBId: privateId })
+        .expect(404);
+      await request(app)
+        .post('/api/conversations')
+        .set(as(intruder))
+        .send({ message: 'Compare os produtos', productIds: [privateId] })
+        .expect(404);
+    }
+    expect(await prisma.productComparison.count()).toBe(0);
+    expect(await prisma.conversation.count()).toBe(0);
   });
 
   it('impede acessar ou excluir históricos de outro usuário', async () => {
@@ -75,8 +81,8 @@ describe('isolamento de dados entre usuários', () => {
       .set(as(owner))
       .send({ message: 'O que é glicerina?' })
       .expect(201);
-    const a = await createProduct(app, owner);
-    const b = await createProduct(app, owner, { name: 'Outro' });
+    const a = await createCatalogProduct();
+    const b = await createCatalogProduct({ name: 'Outro' });
     const comparison = await request(app)
       .post('/api/comparisons')
       .set(as(owner))

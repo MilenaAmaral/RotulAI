@@ -5,7 +5,7 @@ import { prisma } from '../../lib/prisma.js';
 import type { AiService } from '../ai/ai.service.js';
 import type { LlmMessage } from '../ai/llm-provider.js';
 import { asUntrustedData, CHAT_GUIDANCE } from '../ai/prompts.js';
-import { findOwnedProduct } from '../products/products.service.js';
+import { findCatalogProductById } from '../catalog/catalog.service.js';
 
 const messageSelect = { id: true, role: true, content: true, model: true, createdAt: true } as const;
 
@@ -14,19 +14,18 @@ function buildTitle(message: string): string {
   return clean.length > 60 ? `${clean.slice(0, 57)}...` : clean;
 }
 
-/** Monta o contexto dos produtos selecionados, sempre validando que pertencem ao usuário. */
-async function buildProductContext(userId: string, productIds: string[]): Promise<string | null> {
+/** Monta o contexto dos produtos do catálogo público escolhidos pelo usuário. */
+async function buildProductContext(productIds: string[]): Promise<string | null> {
   if (productIds.length === 0) return null;
-  const products = await Promise.all(productIds.map((id) => findOwnedProduct(userId, id)));
+  const products = await Promise.all(productIds.map((id) => findCatalogProductById(id)));
   const text = products
     .map(
       (product) =>
         `Produto: ${product.name} | Marca: ${product.brand} | Categoria: ${product.category}\n` +
-        `Descrição: ${product.description ?? 'não informada'}\n` +
         `Ingredientes (ordem do rótulo): ${product.ingredients.map((item) => item.ingredient.name).join(', ')}`,
     )
     .join('\n\n');
-  return asUntrustedData('produtos_cadastrados', text);
+  return asUntrustedData('produtos_selecionados', text);
 }
 
 async function generateReply(params: {
@@ -39,7 +38,7 @@ async function generateReply(params: {
   if (params.message.length > params.ai.maxInputChars) {
     throw new AppError(400, 'VALIDATION_ERROR', `A mensagem deve ter no máximo ${params.ai.maxInputChars} caracteres.`);
   }
-  const productContext = await buildProductContext(params.userId, params.productIds);
+  const productContext = await buildProductContext(params.productIds);
   const guidance = productContext
     ? `${CHAT_GUIDANCE}\n\nContexto fornecido pelo usuário:\n${productContext}`
     : CHAT_GUIDANCE;

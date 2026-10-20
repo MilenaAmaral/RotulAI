@@ -36,10 +36,7 @@ describe('favoritos', () => {
       .expect(200);
     expect(otherList.body.total).toBe(0);
 
-    await request(app)
-      .delete(`/api/favorites/${product.id}`)
-      .set('Authorization', `Bearer ${other.token}`)
-      .expect(204);
+    await request(app).delete(`/api/favorites/${product.id}`).set('Authorization', `Bearer ${other.token}`).expect(204);
     expect(await prisma.favorite.count({ where: { catalogProductId: product.id } })).toBe(1);
 
     await request(app).delete(`/api/favorites/${product.id}`).set(auth).expect(204);

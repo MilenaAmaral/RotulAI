@@ -17,18 +17,18 @@ async function createCatalogFixture() {
   });
   const [curated, acneIngredient, hyaluronic, uncurated] = await Promise.all([
     prisma.ingredient.create({
-    data: {
-      name: 'Glycerin',
-      normalizedName: 'glycerin',
-      synonyms: ['Glicerina'],
-      searchTerms: ['glycerin', 'glicerina'],
-      functions: ['Umectante'],
-      description: 'Conteúdo educativo de teste.',
-      isCurated: true,
-      sources: {
-        create: [{ title: 'Fonte de teste', publisher: 'Rotulai', url: 'https://example.test/ingredient' }],
+      data: {
+        name: 'Glycerin',
+        normalizedName: 'glycerin',
+        synonyms: ['Glicerina'],
+        searchTerms: ['glycerin', 'glicerina'],
+        functions: ['Umectante'],
+        description: 'Conteúdo educativo de teste.',
+        isCurated: true,
+        sources: {
+          create: [{ title: 'Fonte de teste', publisher: 'Rotulai', url: 'https://example.test/ingredient' }],
+        },
       },
-    },
     }),
     prisma.ingredient.create({
       data: {
@@ -51,13 +51,13 @@ async function createCatalogFixture() {
       },
     }),
     prisma.ingredient.create({
-    data: {
-      name: 'Ingredient Without Reference',
-      normalizedName: 'ingredient without reference',
-      synonyms: [],
-      searchTerms: ['ingredient without reference'],
-      functions: [],
-    },
+      data: {
+        name: 'Ingredient Without Reference',
+        normalizedName: 'ingredient without reference',
+        synonyms: [],
+        searchTerms: ['ingredient without reference'],
+        functions: [],
+      },
     }),
   ]);
   const createProduct = (
@@ -68,24 +68,22 @@ async function createCatalogFixture() {
     ingredients: string[],
   ) =>
     prisma.catalogProduct.create({
-    data: {
-      slug,
-      name,
-      brand,
-      category,
-      referenceUrl: 'https://example.test/product',
-      ingredients: {
-        create: ingredients.map((ingredientId, index) => ({
-          position: index + 1,
-          ingredient: { connect: { id: ingredientId } },
-        })),
+      data: {
+        slug,
+        name,
+        brand,
+        category,
+        referenceUrl: 'https://example.test/product',
+        ingredients: {
+          create: ingredients.map((ingredientId, index) => ({
+            position: index + 1,
+            ingredient: { connect: { id: ingredientId } },
+          })),
+        },
       },
-    },
-  });
+    });
   const [product, acneProduct, sunscreenProduct, hyaluronicProduct] = await Promise.all([
-    createProduct('cerave-moisturizing-cream', 'CeraVe Moisturizing Cream', 'CeraVe', 'HIDRATANTE', [
-      curated.id,
-    ]),
+    createProduct('cerave-moisturizing-cream', 'CeraVe Moisturizing Cream', 'CeraVe', 'HIDRATANTE', [curated.id]),
     createProduct('cerave-acne-control-cleanser', 'CeraVe Acne Control Cleanser', 'CeraVe', 'LIMPEZA', [
       acneIngredient.id,
     ]),
@@ -131,7 +129,7 @@ describe('catálogo público', () => {
       id: product.id,
       referenceUrl: 'https://example.test/product',
       ingredients: [
-        { name: 'Glycerin', position: 1, isCurated: true },
+        { name: 'Sodium Hyaluronate', position: 1, isCurated: true },
         { name: 'Ingredient Without Reference', position: 2, isCurated: false },
       ],
     });
@@ -178,9 +176,7 @@ describe('catálogo público', () => {
       .query({ q: 'ceraeve moiturizing crem' })
       .expect(200);
 
-    expect(response.body.suggestions.map((item: { slug: string }) => item.slug)).toContain(
-      'cerave-moisturizing-cream',
-    );
+    expect(response.body.suggestions.map((item: { slug: string }) => item.slug)).toContain('cerave-moisturizing-cream');
   });
 
   it('usa sinônimos mantidos na tabela sem alterar o código da busca', async () => {

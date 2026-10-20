@@ -117,4 +117,34 @@ describe('autorização administrativa', () => {
     await request(app).delete(`/api/admin/products/${product.body.id}`).set(auth).expect(204);
     await request(app).delete(`/api/admin/ingredients/${ingredient.body.id}`).set(auth).expect(204);
   });
+
+  it('recusa links que não sejam https e responde com mensagens em português', async () => {
+    const admin = await registerUser(app);
+    await prisma.user.update({ where: { id: admin.id }, data: { role: AccessProfile.ADMIN } });
+    const auth = { Authorization: `Bearer ${admin.token}` };
+
+    for (const referenceUrl of ['javascript:alert(1)', 'data:text/html,oi', 'http://exemplo.org']) {
+      const response = await request(app)
+        .post('/api/admin/products')
+        .set(auth)
+        .send({ name: 'Produto', brand: 'Marca', category: 'SERUM', referenceUrl, ingredients: ['Aqua'] })
+        .expect(400);
+      expect(response.body.error.details).toContainEqual({
+        field: 'referenceUrl',
+        message: 'A URL da referência deve começar com https://',
+      });
+    }
+
+    const ingredient = await request(app)
+      .post('/api/admin/ingredients')
+      .set(auth)
+      .send({ name: 'Aqua', sources: [{ title: 'Fonte', publisher: 'Editora', url: 'javascript:alert(1)' }] })
+      .expect(400);
+    expect(ingredient.body.error.details).toContainEqual({
+      field: 'sources.0.url',
+      message: 'A URL da fonte deve começar com https://',
+    });
+    expect(await prisma.catalogProduct.count()).toBe(0);
+    expect(await prisma.ingredient.count()).toBe(0);
+  });
 });

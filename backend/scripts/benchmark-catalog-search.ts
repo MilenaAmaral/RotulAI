@@ -44,7 +44,9 @@ try {
   console.info('Consulta\tN\tp50 (ms)\tp95 (ms)');
   for (const query of queries) {
     const samples = await measure(query);
-    console.info(`${query}\t${samples.length}\t${percentile(samples, 0.5).toFixed(1)}\t${percentile(samples, 0.95).toFixed(1)}`);
+    console.info(
+      `${query}\t${samples.length}\t${percentile(samples, 0.5).toFixed(1)}\t${percentile(samples, 0.95).toFixed(1)}`,
+    );
   }
 } finally {
   await prisma.$disconnect();

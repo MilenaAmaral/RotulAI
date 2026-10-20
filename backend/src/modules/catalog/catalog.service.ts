@@ -1,9 +1,9 @@
 import { Prisma } from '../../generated/prisma/client.js';
+import type { ProductCategory } from '../../generated/prisma/enums.js';
 import { notFound } from '../../lib/errors.js';
 import { buildPage } from '../../lib/pagination.js';
 import { prisma } from '../../lib/prisma.js';
 import { normalizeIngredientName } from '../ingredients/ingredient-names.js';
-import type { ProductCategory } from '../../generated/prisma/enums.js';
 import { containsSearchPhrase, normalizeSearchText, searchTokens } from './search-normalization.js';
 import type { PublicIngredientListQuery, PublicProductListQuery } from './catalog.schemas.js';
 
@@ -132,11 +132,14 @@ function buildCatalogSearchCte(params: {
   `;
 }
 
-function buildSearchInput(query: PublicProductListQuery, synonyms: Array<{
-  normalizedPhrase: string;
-  expansions: string[];
-  category: string | null;
-}>) {
+function buildSearchInput(
+  query: PublicProductListQuery,
+  synonyms: Array<{
+    normalizedPhrase: string;
+    expansions: string[];
+    category: string | null;
+  }>,
+) {
   const normalizedQuery = normalizeSearchText(query.q ?? '');
   const expandedPhrases = new Set([normalizedQuery]);
   const categories = new Set<string>();
@@ -206,11 +209,8 @@ export async function listPublicProducts(query: PublicProductListQuery) {
     `);
     const skip = (query.page - 1) * query.pageSize;
     const rows = await fetchSearchRows(tx, cte, Math.max(query.pageSize, 3), skip);
-    const suggestionRows = search.query && !summary?.hasExactMatch
-      ? query.page === 1
-        ? rows
-        : await fetchSearchRows(tx, cte, 3, 0)
-      : [];
+    const suggestionRows =
+      search.query && !summary?.hasExactMatch ? (query.page === 1 ? rows : await fetchSearchRows(tx, cte, 3, 0)) : [];
     return { summary, rows, suggestionRows };
   });
 
@@ -224,20 +224,22 @@ export async function listPublicProducts(query: PublicProductListQuery) {
   };
 }
 
-export async function getPublicProduct(slug: string) {
-  const product = await prisma.catalogProduct.findUnique({
-    where: { slug },
-    include: {
-      ingredients: {
-        orderBy: { position: 'asc' },
-        select: {
-          position: true,
-          ingredient: { select: { id: true, name: true, functions: true, isCurated: true } },
-        },
-      },
+export const catalogProductDetailInclude = {
+  ingredients: {
+    orderBy: { position: 'asc' },
+    select: {
+      position: true,
+      ingredient: { select: { id: true, name: true, functions: true, isCurated: true } },
     },
-  });
-  if (!product) throw notFound('Produto');
+  },
+} as const satisfies Prisma.CatalogProductInclude;
+
+export type CatalogProductWithIngredients = Prisma.CatalogProductGetPayload<{
+  include: typeof catalogProductDetailInclude;
+}>;
+
+/** Formato público do produto: ingredientes já na ordem do rótulo, sem a tabela de junção. */
+export function toCatalogProductDetail(product: CatalogProductWithIngredients) {
   return {
     id: product.id,
     slug: product.slug,
@@ -247,6 +249,18 @@ export async function getPublicProduct(slug: string) {
     referenceUrl: product.referenceUrl,
     ingredients: product.ingredients.map(({ position, ingredient }) => ({ ...ingredient, position })),
   };
+}
+
+export async function findCatalogProductById(id: string): Promise<CatalogProductWithIngredients> {
+  const product = await prisma.catalogProduct.findUnique({ where: { id }, include: catalogProductDetailInclude });
+  if (!product) throw notFound('Produto');
+  return product;
+}
+
+export async function getPublicProduct(slug: string) {
+  const product = await prisma.catalogProduct.findUnique({ where: { slug }, include: catalogProductDetailInclude });
+  if (!product) throw notFound('Produto');
+  return toCatalogProductDetail(product);
 }
 
 export async function listPublicIngredients(query: PublicIngredientListQuery) {

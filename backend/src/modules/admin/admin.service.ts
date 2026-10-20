@@ -1,13 +1,18 @@
 import type { Prisma } from '../../generated/prisma/client.js';
-import type { ProductCategory, SkinConcern, SkinType } from '../../generated/prisma/enums.js';
 import { AppError, notFound } from '../../lib/errors.js';
 import { buildPage } from '../../lib/pagination.js';
 import { prisma } from '../../lib/prisma.js';
 import { slugify } from '../../lib/slugify.js';
+import {
+  catalogProductDetailInclude,
+  findCatalogProductById,
+  listPublicProducts,
+  toCatalogProductDetail,
+} from '../catalog/catalog.service.js';
+import type { PublicProductListQuery } from '../catalog/catalog.schemas.js';
+import { normalizeSearchText } from '../catalog/search-normalization.js';
 import { normalizeIngredientName } from '../ingredients/ingredient-names.js';
 import { resolveIngredientIds } from '../ingredients/ingredient-resolver.js';
-import * as catalogService from '../catalog/catalog.service.js';
-import { normalizeSearchText } from '../catalog/search-normalization.js';
 import type {
   AdminIngredientInput,
   AdminListQuery,
@@ -15,16 +20,6 @@ import type {
   AdminRecommendationRuleInput,
   AdminSearchSynonymInput,
 } from './admin.schemas.js';
-
-const catalogProductInclude = {
-  ingredients: {
-    orderBy: { position: 'asc' },
-    select: {
-      position: true,
-      ingredient: { select: { id: true, name: true, functions: true, isCurated: true } },
-    },
-  },
-} as const satisfies Prisma.CatalogProductInclude;
 
 function catalogProductSlug(input: Pick<AdminProductInput, 'brand' | 'name'>): string {
   return slugify(`${input.brand} ${input.name}`) || 'produto';
@@ -48,18 +43,16 @@ async function ensureProductSlugAvailable(
   }
 }
 
-export function listAdminProducts(query: Parameters<typeof catalogService.listPublicProducts>[0]) {
-  return catalogService.listPublicProducts(query);
+export function listAdminProducts(query: PublicProductListQuery) {
+  return listPublicProducts(query);
 }
 
 export async function getAdminProduct(id: string) {
-  const product = await prisma.catalogProduct.findUnique({ where: { id }, include: catalogProductInclude });
-  if (!product) throw notFound('Produto');
-  return product;
+  return toCatalogProductDetail(await findCatalogProductById(id));
 }
 
 export async function createAdminProduct(input: AdminProductInput) {
-  return prisma.$transaction(async (tx) => {
+  const product = await prisma.$transaction(async (tx) => {
     const slug = catalogProductSlug(input);
     await ensureProductSlugAvailable(tx, input, slug);
     const ingredientIds = await resolveIngredientIds(tx, input.ingredients);
@@ -74,13 +67,14 @@ export async function createAdminProduct(input: AdminProductInput) {
           create: ingredientIds.map((ingredientId, index) => ({ ingredientId, position: index + 1 })),
         },
       },
-      include: catalogProductInclude,
+      include: catalogProductDetailInclude,
     });
   });
+  return toCatalogProductDetail(product);
 }
 
 export async function updateAdminProduct(id: string, input: AdminProductInput) {
-  return prisma.$transaction(async (tx) => {
+  const product = await prisma.$transaction(async (tx) => {
     const product = await tx.catalogProduct.findUnique({ where: { id }, select: { id: true } });
     if (!product) throw notFound('Produto');
 
@@ -101,9 +95,10 @@ export async function updateAdminProduct(id: string, input: AdminProductInput) {
           create: ingredientIds.map((ingredientId, index) => ({ ingredientId, position: index + 1 })),
         },
       },
-      include: catalogProductInclude,
+      include: catalogProductDetailInclude,
     });
   });
+  return toCatalogProductDetail(product);
 }
 
 export async function deleteAdminProduct(id: string): Promise<void> {
@@ -191,10 +186,7 @@ export async function updateAdminIngredient(id: string, input: AdminIngredientIn
     await tx.ingredientSource.deleteMany({ where: { ingredientId: id } });
     return tx.ingredient.update({
       where: { id },
-      data: {
-        ...data,
-        sources: { create: input.sources },
-      },
+      data,
       include: { sources: { orderBy: { title: 'asc' } } },
     });
   });
@@ -287,8 +279,8 @@ async function ensureRuleUnique(
   const conflict = await prisma.recommendationRule.findFirst({
     where: {
       ingredientId: input.ingredientId,
-      skinType: input.skinType as SkinType,
-      concern: input.concern as SkinConcern,
+      skinType: input.skinType,
+      concern: input.concern,
       ...(excludeId ? { id: { not: excludeId } } : {}),
     },
     select: { id: true },
@@ -321,5 +313,3 @@ export async function deleteAdminRecommendationRule(id: string): Promise<void> {
   const result = await prisma.recommendationRule.deleteMany({ where: { id } });
   if (result.count === 0) throw notFound('Regra de indicação');
 }
-
-export type AdminProductCategory = ProductCategory;
