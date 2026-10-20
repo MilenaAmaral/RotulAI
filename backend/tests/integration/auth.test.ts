@@ -53,6 +53,19 @@ describe('autenticação', () => {
     expect(duplicate.body.error.code).toBe('CONFLICT');
   });
 
+  it('cadastros simultâneos com o mesmo e-mail criam uma conta e respondem 409 às demais', async () => {
+    const attempts = await Promise.all(
+      Array.from({ length: 30 }, () =>
+        request(app)
+          .post('/api/auth/register')
+          .send({ name: 'Bia', email: 'bia@exemplo.dev', password: 'SenhaForte1' }),
+      ),
+    );
+    const statuses = attempts.map((response) => response.status).sort();
+    expect(statuses).toEqual([201, ...Array(29).fill(409)]);
+    expect(await prisma.user.count({ where: { email: 'bia@exemplo.dev' } })).toBe(1);
+  });
+
   it('usa a mesma mensagem para e-mail inexistente e senha incorreta', async () => {
     const user = await registerUser(app);
     const wrongPassword = await request(app)

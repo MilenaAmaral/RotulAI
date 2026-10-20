@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import {
+  createCatalogProduct,
   createProduct,
   createTestApp,
   prisma,
@@ -118,11 +119,11 @@ describe('catálogo de produtos', () => {
 });
 
 describe('comparação de produtos', () => {
-  it('calcula a comparação no servidor e registra no histórico', async () => {
+  it('compara produtos do catálogo público no servidor e registra no histórico', async () => {
     const user = await registerUser(app);
     const auth = { Authorization: `Bearer ${user.token}` };
-    const a = await createProduct(app, user, { name: 'Produto A', ingredients: ['Aqua', 'Glycerin', 'Parfum'] });
-    const b = await createProduct(app, user, { name: 'Produto B', ingredients: ['Aqua', 'Panthenol'] });
+    const a = await createCatalogProduct({ name: 'Produto A', ingredients: ['Aqua', 'Glycerin', 'Parfum'] });
+    const b = await createCatalogProduct({ name: 'Produto B', ingredients: ['Aqua', 'Panthenol'] });
 
     const response = await request(app)
       .post('/api/comparisons')
@@ -130,6 +131,7 @@ describe('comparação de produtos', () => {
       .send({ productAId: a.id, productBId: b.id })
       .expect(201);
     const { result } = response.body;
+    expect(result.productA).toMatchObject({ id: a.id, slug: a.slug, name: 'Produto A', ingredientCount: 3 });
     expect(result.commonIngredients.map((item: { name: string }) => item.name)).toEqual(['Aqua']);
     expect(result.exclusiveToA.map((item: { name: string }) => item.name)).toEqual(['Glycerin', 'Parfum']);
     expect(result.exclusiveToB.map((item: { name: string }) => item.name)).toEqual(['Panthenol']);
@@ -142,11 +144,23 @@ describe('comparação de produtos', () => {
 
   it('não permite comparar um produto com ele mesmo', async () => {
     const user = await registerUser(app);
-    const a = await createProduct(app, user);
+    const a = await createCatalogProduct();
     await request(app)
       .post('/api/comparisons')
       .set('Authorization', `Bearer ${user.token}`)
       .send({ productAId: a.id, productBId: a.id })
       .expect(400);
+  });
+
+  it('retorna 404 sem registrar histórico quando um dos produtos não existe no catálogo', async () => {
+    const user = await registerUser(app);
+    const a = await createCatalogProduct();
+    const response = await request(app)
+      .post('/api/comparisons')
+      .set('Authorization', `Bearer ${user.token}`)
+      .send({ productAId: a.id, productBId: '00000000-0000-4000-8000-000000000000' })
+      .expect(404);
+    expect(response.body.error.code).toBe('NOT_FOUND');
+    expect(await prisma.productComparison.count()).toBe(0);
   });
 });

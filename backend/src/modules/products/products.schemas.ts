@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ProductCategory } from '../../generated/prisma/enums.js';
 import { paginationQuerySchema } from '../../lib/pagination.js';
+import { optionalHttpsUrl } from '../../lib/schemas.js';
 
 export const PRODUCT_CATEGORIES = Object.values(ProductCategory);
 
@@ -26,26 +27,8 @@ export const productInputSchema = z.object({
     .max(80, 'A marca deve ter no máximo 80 caracteres.'),
   category: z.enum(ProductCategory, { error: 'Selecione uma categoria válida.' }),
   description: optionalText(2000, 'A descrição deve ter no máximo 2000 caracteres.'),
-  imageUrl: z
-    .string()
-    .trim()
-    .max(500, 'A URL da imagem deve ter no máximo 500 caracteres.')
-    .optional()
-    .nullable()
-    .transform((value) => (value ? value : null))
-    .refine((value) => value === null || /^https:\/\/[^\s]+$/i.test(value), {
-      message: 'A imagem deve ser uma URL iniciada por https://',
-    }),
-  referenceUrl: z
-    .string()
-    .trim()
-    .max(500, 'O link da fonte deve ter no máximo 500 caracteres.')
-    .optional()
-    .nullable()
-    .transform((value) => (value ? value : null))
-    .refine((value) => value === null || /^https:\/\/[^\s]+$/i.test(value), {
-      message: 'O link da fonte deve começar com https://',
-    }),
+  imageUrl: optionalHttpsUrl('A URL da imagem'),
+  referenceUrl: optionalHttpsUrl('O link da fonte'),
   ingredients: z
     .array(
       z.string().trim().min(1, 'Ingrediente vazio.').max(120, 'Cada ingrediente deve ter no máximo 120 caracteres.'),
