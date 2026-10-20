@@ -35,6 +35,10 @@ Funções puras ficam separadas para testes sem banco:
 
 `app.ts` recebe o `AiService` por injeção de dependência (`createApp({ ai })`). Isso permite testar a API inteira com um provedor de IA de teste, sem simular respostas em produção.
 
+O formato público de um produto do catálogo (`toCatalogProductDetail` em `catalog.service.ts`) é reutilizado pelo detalhe público, pelo painel admin, pelo comparador e pelo contexto do assistente, para que todos leiam os ingredientes da mesma forma.
+
+O `errorHandler` central converte erros conhecidos do Prisma que dependem de concorrência em respostas adequadas: violação de unicidade (`P2002`) vira `409` e registro inexistente (`P2025`) vira `404`. As verificações "existe antes de criar" dos serviços continuam dando mensagens específicas no caso comum; o mapeamento cobre a corrida entre duas requisições simultâneas.
+
 ### Modelo de dados
 
 ```mermaid
@@ -68,7 +72,8 @@ Decisões:
 - O seed de ingredientes e `db:seed-public` são não destrutivos: não apagam contas, não recriam usuário de demonstração e não sobrescrevem conteúdo existente. O primeiro Admin é criado pelo comando `npm run admin:bootstrap -w backend`, com credenciais fornecidas pelo ambiente.
 - O catálogo público pesquisa por nome/marca e categoria; a referência de ingredientes pública mostra apenas `Ingredient.isCurated = true`. Detalhes públicos não retornam produtos do usuário.
 - A busca pública usa `pg_trgm` + `unaccent`, índices GIN de expressão no nome/marca e uma tabela `CatalogSearchSynonym` para expansão editável de frases. O endpoint devolve sugestões separadas quando não encontra correspondência exata. Ver [docs/BUSCA-CATALOGO.md](./BUSCA-CATALOGO.md).
-- **ProductComparison.result** guarda um retrato do resultado (JSON). Se um produto for editado ou excluído depois, o histórico continua coerente.
+- **ProductComparison.result** guarda um retrato do resultado (JSON). Se um produto for editado ou excluído depois, o histórico continua coerente. Comparações novas usam produtos do catálogo público e guardam o `slug` de cada um; as antigas, feitas com produtos pessoais, não têm `slug` e continuam legíveis.
+- O comparador e o contexto do assistente aceitam apenas ids do catálogo público. Produtos pessoais legados nunca são enviados ao modelo de IA.
 - **AiUsageLog** fica separado do histórico para que apagar conversas não zere a cota diária.
 - Dados privados usam `onDelete: Cascade` a partir de `User`; `ProductIngredient → Ingredient` usa `Restrict` para proteger o catálogo.
 - `CatalogProductIngredient → Ingredient` também usa `Restrict`; apagar um ingrediente em uso público não é permitido sem atualizar primeiro os vínculos.
@@ -116,7 +121,7 @@ AiService                   ← independente de fornecedor
 
 Para adicionar outro provedor: implementar `LlmProvider`, incluir o valor em `AI_PROVIDER` (`config/env.ts`) e registrar em `provider-factory.ts`.
 
-Dados do usuário (produtos, nomes de ingredientes) vão para o modelo dentro de `<dados>...</dados>`, com instrução explícita para tratá-los como informação e não como comando.
+Dados fornecidos pelo usuário (mensagens, produtos escolhidos, nomes de ingredientes) vão para o modelo dentro de `<dados>...</dados>`, com instrução explícita para tratá-los como informação e não como comando.
 
 ### Retenção
 
@@ -133,7 +138,8 @@ src/
 ```
 
 - **Estado do servidor** em TanStack Query, com chaves centralizadas e invalidação após mutações.
-- **Formulários** com React Hook Form + Zod, espelhando as regras do back-end; erros de validação do servidor são exibidos no campo correspondente.
+- **Formulários** de autenticação e consulta com React Hook Form + Zod, espelhando as regras do back-end; erros de validação do servidor são exibidos no campo correspondente. O painel admin (`features/admin/`) usa um arquivo por recurso e formulários controlados simples; a validação definitiva fica no servidor.
+- **Listas de ingredientes** digitadas passam por `parseIngredientText` (`lib/ingredients.ts`), que separa por vírgula, ponto e vírgula ou linha, mas preserva vírgulas de nomes químicos como "1,2-Hexanediol".
 - **Acessibilidade:** rótulos associados, `aria-invalid` e `aria-describedby`, link para pular ao conteúdo, foco visível, diálogo nativo `<dialog>`, abas com navegação por setas, regiões `aria-live` e respeito a `prefers-reduced-motion`.
 
 ### Identidade visual
