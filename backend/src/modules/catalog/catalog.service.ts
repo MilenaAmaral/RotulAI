@@ -132,11 +132,14 @@ function buildCatalogSearchCte(params: {
   `;
 }
 
-function buildSearchInput(query: PublicProductListQuery, synonyms: Array<{
-  normalizedPhrase: string;
-  expansions: string[];
-  category: string | null;
-}>) {
+function buildSearchInput(
+  query: PublicProductListQuery,
+  synonyms: Array<{
+    normalizedPhrase: string;
+    expansions: string[];
+    category: string | null;
+  }>,
+) {
   const normalizedQuery = normalizeSearchText(query.q ?? '');
   const expandedPhrases = new Set([normalizedQuery]);
   const categories = new Set<string>();
@@ -206,11 +209,8 @@ export async function listPublicProducts(query: PublicProductListQuery) {
     `);
     const skip = (query.page - 1) * query.pageSize;
     const rows = await fetchSearchRows(tx, cte, Math.max(query.pageSize, 3), skip);
-    const suggestionRows = search.query && !summary?.hasExactMatch
-      ? query.page === 1
-        ? rows
-        : await fetchSearchRows(tx, cte, 3, 0)
-      : [];
+    const suggestionRows =
+      search.query && !summary?.hasExactMatch ? (query.page === 1 ? rows : await fetchSearchRows(tx, cte, 3, 0)) : [];
     return { summary, rows, suggestionRows };
   });
 
