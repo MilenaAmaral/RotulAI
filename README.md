@@ -297,28 +297,52 @@ npm run build        # gera backend/dist e frontend/dist
 npm start -w backend # executa a API compilada
 ```
 
-### Sugestão de hospedagem
+### Vercel (front-end e API no mesmo projeto)
 
-**Banco:** PostgreSQL gerenciado (Neon, Supabase, Render ou Railway). Copie a URL de conexão.
+O `vercel.json` da raiz usa [Vercel Services](https://vercel.com/docs/services) (beta): o front-end responde em `/` e a API em `/api`, no mesmo domínio. Assim o cookie de sessão funciona com `COOKIE_SAMESITE=lax` e `VITE_API_URL` fica vazio. Não há chamadas entre servidores, então nenhum _binding_ é necessário.
 
-**API (Render, Railway ou Fly.io):**
+| Serviço    | Pasta      | Caminho público | Build                                          |
+| ---------- | ---------- | --------------- | ---------------------------------------------- |
+| `frontend` | `frontend` | `/`             | `npm run build` → `dist` (com fallback SPA)    |
+| `backend`  | `backend`  | `/api`          | `npm run db:generate`; entrada `src/server.ts` |
+
+**1. Banco de produção.** Crie um banco PostgreSQL separado do de desenvolvimento (por exemplo, um projeto novo no Neon). O Neon oferece duas URLs: a _pooled_ (host com `-pooler`), para a aplicação, e a direta, para migrações. Aplique as migrações e os dados a partir da sua máquina, informando a URL direta só na linha de comando:
+
+```bash
+cd backend
+DATABASE_URL="<url-direta>" npx prisma migrate deploy
+DATABASE_URL="<url-direta>" npm run db:seed
+DATABASE_URL="<url-direta>" npm run db:seed-public
+DATABASE_URL="<url-direta>" BOOTSTRAP_ADMIN_EMAIL="voce@exemplo.com" BOOTSTRAP_ADMIN_PASSWORD="<senha-forte>" npm run admin:bootstrap
+```
+
+No PowerShell, defina antes cada variável com `$env:DATABASE_URL="<url-direta>"` e remova ao final com `Remove-Item Env:DATABASE_URL`.
+
+**2. Variáveis no painel da Vercel** (_Settings → Environment Variables_):
+
+| Variável            | Valor                                                               |
+| ------------------- | ------------------------------------------------------------------- |
+| `DATABASE_URL`      | URL _pooled_ do banco de produção                                   |
+| `JWT_ACCESS_SECRET` | segredo novo, gerado com o comando da seção de configuração         |
+| `NODE_ENV`          | `production`                                                        |
+| `TRUST_PROXY`       | `1`                                                                 |
+| `CORS_ORIGINS`      | domínio público, ex.: `https://rotulai.vercel.app`                  |
+| `AI_PROVIDER`       | `none` (ou `anthropic` com `ANTHROPIC_API_KEY` para habilitar a IA) |
+
+**3. Importar o repositório** na Vercel mantendo o diretório raiz `./`. O painel detecta os dois serviços a partir do `vercel.json`.
+
+Particularidades da execução como função da Vercel:
+
+- A API roda como Vercel Function. A rotina de retenção roda quando uma instância inicia, e não a cada 24 horas garantidas; para uma execução diária fixa, use um [Cron Job](https://vercel.com/docs/cron-jobs).
+- O rate limit fica em memória por instância, então os limites valem por instância e não globalmente.
+- A Vercel não serve arquivos com `express.static()`, então a interface do Swagger em `/api/docs` pode não carregar. A especificação em `/api/docs.json` continua disponível.
+
+### Alternativa: API em Render, Railway ou Fly.io
 
 - Com Docker: `docker build -f backend/Dockerfile -t rotulai-api .` (a imagem aplica `prisma migrate deploy` antes de iniciar).
 - Sem Docker: build `npm ci && npm run db:generate -w backend && npm run build -w backend`; start `npm run db:deploy -w backend && npm start -w backend`.
-- Variáveis: `NODE_ENV=production`, `DATABASE_URL`, `JWT_ACCESS_SECRET`, `CORS_ORIGINS=https://seu-front.vercel.app`, `TRUST_PROXY=1`, `ANTHROPIC_API_KEY` (opcional).
-- Health check: `GET /api/health`.
-
-**Front-end (Vercel ou Netlify):** diretório `frontend`, build `npm run build`, saída `dist`. O `vercel.json` já faz o fallback de rotas da SPA e adiciona cabeçalhos de segurança.
-
-**Cookies entre domínios:** o refresh token fica em cookie httpOnly. Duas opções:
-
-1. _Recomendado:_ fazer o front encaminhar `/api` para a API e deixar `VITE_API_URL` vazio. Tudo fica no mesmo domínio e `COOKIE_SAMESITE=lax` funciona. Na Vercel, adicione esta regra **antes** da regra da SPA em `frontend/vercel.json`, trocando pela URL real da API:
-   ```json
-   { "source": "/api/:path*", "destination": "https://sua-api.onrender.com/api/:path*" }
-   ```
-2. Domínios separados: `VITE_API_URL=https://sua-api`, `COOKIE_SAMESITE=none` e `COOKIE_SECURE=true`. Alguns navegadores bloqueiam cookies de terceiros; por isso a opção 1 é preferível.
-
-A aplicação ainda **não está publicada**. As instruções acima foram preparadas, mas o deploy depende das suas contas nos serviços de hospedagem.
+- Mesmas variáveis da tabela acima. Health check: `GET /api/health`.
+- Para manter um único domínio, publique só o front-end na Vercel e encaminhe `/api` para a API externa com uma regra de rewrite antes do fallback da SPA. Com domínios separados, use `VITE_API_URL=https://sua-api`, `COOKIE_SAMESITE=none` e `COOKIE_SECURE=true` (alguns navegadores bloqueiam cookies de terceiros).
 
 ## Segurança
 
