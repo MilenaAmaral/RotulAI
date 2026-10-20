@@ -2,7 +2,11 @@ import { Check, Minus } from 'lucide-react';
 import { Link } from 'react-router';
 import { IngredientChips } from '../../components/ui/IngredientChips';
 import { CATEGORY_LABELS, pluralize } from '../../lib/format';
-import type { ComparisonResult } from '../../types/api';
+import type { ComparisonProductSummary, ComparisonResult } from '../../types/api';
+
+/** Comparações do catálogo levam à página pública; as antigas, ao registro pessoal arquivado. */
+const productHref = (product: ComparisonProductSummary) =>
+  product.slug ? `/catalogo/produtos/${product.slug}` : `/produtos/${product.id}`;
 
 function SameFlag({ same, label }: { same: boolean; label: string }) {
   return (
@@ -31,7 +35,7 @@ export function ComparisonResultView({ result }: { result: ComparisonResult }) {
           >
             <p className="text-sm font-semibold text-ink-soft">Produto {index === 0 ? 'A' : 'B'}</p>
             <h2 className="mt-1 text-xl font-semibold">
-              <Link to={`/produtos/${product.id}`} className="hover:underline">
+              <Link to={productHref(product)} className="hover:underline">
                 {product.name}
               </Link>
             </h2>

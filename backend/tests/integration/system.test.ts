@@ -45,7 +45,13 @@ describe('sistema', () => {
     const response = await request(app).get('/api/docs.json').expect(200);
     expect(response.body.openapi).toBe('3.1.0');
     expect(Object.keys(response.body.paths)).toEqual(
-      expect.arrayContaining(['/catalog/products', '/catalog/ingredients', '/products', '/comparisons', '/conversations']),
+      expect.arrayContaining([
+        '/catalog/products',
+        '/catalog/ingredients',
+        '/products',
+        '/comparisons',
+        '/conversations',
+      ]),
     );
   });
 });

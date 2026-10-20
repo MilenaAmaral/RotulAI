@@ -7,12 +7,15 @@ import { SelectField } from '../../components/ui/Field';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { LoadingBlock } from '../../components/ui/Spinner';
 import { EmptyState, ErrorState } from '../../components/ui/States';
-import { useCreateComparison, useProducts } from '../../lib/queries';
+import { useCreateComparison, useFavorites } from '../../lib/queries';
+
+/** Limite de itens por página da API de favoritos. */
+const FAVORITES_PAGE_SIZE = 50;
 
 export function ComparePage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const products = useProducts({ pageSize: 200 });
+  const products = useFavorites(1, FAVORITES_PAGE_SIZE);
   const create = useCreateComparison();
   const [productAId, setProductAId] = useState(params.get('a') ?? '');
   const [productBId, setProductBId] = useState(params.get('b') ?? '');
@@ -31,7 +34,7 @@ export function ComparePage() {
     <>
       <PageHeader
         title="Comparador"
-        description="Compare dois produtos do seu catálogo: ingredientes em comum, exclusivos de cada um, marca e categoria."
+        description="Compare dois dos seus favoritos: ingredientes em comum, exclusivos de cada um, marca e categoria."
       />
 
       {products.isLoading && <LoadingBlock />}
@@ -40,9 +43,9 @@ export function ComparePage() {
       {products.data && products.data.total < 2 && (
         <EmptyState
           icon={<ArrowLeftRight size={20} />}
-          title="Cadastre pelo menos dois produtos"
-          description="A comparação usa os produtos do seu catálogo. Cadastre outro produto para comparar."
-          action={<ButtonLink to="/produtos/novo">Cadastrar produto</ButtonLink>}
+          title="Favorite pelo menos dois produtos"
+          description="A comparação usa os produtos que você salvou do catálogo público. Favorite outro produto para comparar."
+          action={<ButtonLink to="/catalogo">Explorar o catálogo</ButtonLink>}
         />
       )}
 
@@ -69,7 +72,7 @@ export function ComparePage() {
             ))}
           </div>
           {products.data.total > products.data.items.length && (
-            <p className="text-sm text-ink-soft">Mostrando os 200 produtos mais recentes.</p>
+            <p className="text-sm text-ink-soft">Mostrando os {FAVORITES_PAGE_SIZE} favoritos mais recentes.</p>
           )}
           {formError && (
             <p role="alert" className="text-sm font-medium text-danger">

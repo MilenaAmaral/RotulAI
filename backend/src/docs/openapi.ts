@@ -362,7 +362,7 @@ export function buildOpenApiDocument() {
         get: comparisons.list,
         post: {
           tags: ['Comparador'],
-          summary: 'Compara dois produtos com regras determinísticas',
+          summary: 'Compara dois produtos do catálogo público com regras determinísticas',
           security: secured,
           requestBody: jsonBody(createComparisonSchema),
           responses: { 201: json('Comparação'), 400: errors[400], 404: errors[404] },
@@ -391,10 +391,16 @@ export function buildOpenApiDocument() {
         get: conversations.list,
         post: {
           tags: ['Assistente'],
-          summary: 'Inicia conversa com a IA',
+          summary: 'Inicia conversa com a IA (productIds: até 2 produtos do catálogo público)',
           security: secured,
           requestBody: jsonBody(chatMessageSchema),
-          responses: { 201: json('Conversa criada'), 400: errors[400], 429: errors[429], ...aiErrors },
+          responses: {
+            201: json('Conversa criada'),
+            400: errors[400],
+            404: errors[404],
+            429: errors[429],
+            ...aiErrors,
+          },
         },
         delete: conversations.clear,
       },

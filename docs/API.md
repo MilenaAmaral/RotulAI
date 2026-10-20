@@ -28,19 +28,19 @@ indicação e sinônimos. A autorização é aplicada no backend.
 }
 ```
 
-| HTTP | Código                                 | Quando                                            |
-| ---- | -------------------------------------- | ------------------------------------------------- |
-| 400  | `VALIDATION_ERROR`                     | Entrada inválida, JSON malformado, id malformado  |
-| 401  | `UNAUTHORIZED`                         | Sem token, token expirado, credenciais incorretas |
-| 403  | `FORBIDDEN`                            | Senha incorreta ou perfil sem permissão           |
-| 404  | `NOT_FOUND`                            | Recurso inexistente **ou de outro usuário**       |
-| 409  | `CONFLICT`                             | E-mail já cadastrado                              |
-| 413  | `VALIDATION_ERROR`                     | Corpo acima de 64 KB                              |
-| 429  | `RATE_LIMITED` / `AI_QUOTA_EXCEEDED`   | Limite de requisições ou cota diária de IA        |
-| 502  | `AI_INVALID_RESPONSE`                  | Resposta da IA vazia ou fora do formato           |
-| 503  | `AI_NOT_CONFIGURED` / `AI_UNAVAILABLE` | IA sem chave ou provedor indisponível             |
-| 504  | `AI_TIMEOUT`                           | Tempo limite da IA excedido                       |
-| 500  | `INTERNAL_ERROR`                       | Erro inesperado (detalhes apenas nos logs)        |
+| HTTP | Código                                 | Quando                                                                      |
+| ---- | -------------------------------------- | --------------------------------------------------------------------------- |
+| 400  | `VALIDATION_ERROR`                     | Entrada inválida, JSON malformado, id malformado                            |
+| 401  | `UNAUTHORIZED`                         | Sem token, token expirado, credenciais incorretas                           |
+| 403  | `FORBIDDEN`                            | Senha incorreta ou perfil sem permissão                                     |
+| 404  | `NOT_FOUND`                            | Recurso inexistente **ou de outro usuário**                                 |
+| 409  | `CONFLICT`                             | E-mail, nome ou frase já cadastrados (inclusive em requisições simultâneas) |
+| 413  | `VALIDATION_ERROR`                     | Corpo acima de 64 KB                                                        |
+| 429  | `RATE_LIMITED` / `AI_QUOTA_EXCEEDED`   | Limite de requisições ou cota diária de IA                                  |
+| 502  | `AI_INVALID_RESPONSE`                  | Resposta da IA vazia ou fora do formato                                     |
+| 503  | `AI_NOT_CONFIGURED` / `AI_UNAVAILABLE` | IA sem chave ou provedor indisponível                                       |
+| 504  | `AI_TIMEOUT`                           | Tempo limite da IA excedido                                                 |
+| 500  | `INTERNAL_ERROR`                       | Erro inesperado (detalhes apenas nos logs)                                  |
 
 ## Paginação
 
@@ -92,7 +92,11 @@ Todas as rotas `/admin/*` exigem autenticação e perfil `ADMIN`; visitantes rec
 | Regras de indicação  | `GET /admin/recommendation-rules` | `POST /admin/recommendation-rules` | `PUT /admin/recommendation-rules/:id` | `DELETE /admin/recommendation-rules/:id` |
 
 A exclusão de ingrediente em uso retorna `409`. Regras só aceitam ingredientes curados e a edição incrementa sua
-versão. A justificativa editorial é armazenada com a regra para revisão.
+versão. A justificativa editorial é armazenada com a regra para revisão. `referenceUrl` de produtos e `url` das fontes
+de ingredientes precisam começar com `https://`; outros esquemas (`http:`, `javascript:`, `data:`) retornam `400`.
+
+`POST`, `PUT` e `GET /admin/products/:id` respondem no mesmo formato de `GET /catalog/products/:slug`: os ingredientes
+vêm como lista `{ id, name, functions, isCurated, position }` na ordem do rótulo.
 
 ## Exemplos
 
@@ -144,6 +148,9 @@ POST /api/ingredient-analyses
 
 ### Comparar produtos
 
+Os dois ids são de produtos do **catálogo público** (a interface oferece os favoritos da pessoa). Ids inexistentes
+no catálogo, como os de produtos pessoais legados, retornam `404` e nada é gravado no histórico.
+
 ```http
 POST /api/comparisons
 { "productAId": "<uuid>", "productBId": "<uuid>" }
@@ -153,8 +160,8 @@ POST /api/comparisons
 {
   "id": "…",
   "result": {
-    "productA": { "name": "…", "ingredientCount": 3 },
-    "productB": { "name": "…", "ingredientCount": 2 },
+    "productA": { "id": "…", "slug": "marca-produto", "name": "…", "ingredientCount": 3 },
+    "productB": { "id": "…", "slug": "marca-outro", "name": "…", "ingredientCount": 2 },
     "sameBrand": false,
     "sameCategory": true,
     "commonIngredients": [{ "id": "…", "name": "Aqua", "positionA": 1, "positionB": 1 }],
@@ -173,7 +180,9 @@ POST /api/conversations
 { "message": "O que é niacinamida?", "productIds": [] }
 ```
 
-Retorna a conversa criada com as mensagens do usuário e do assistente. Mensagens seguintes: `POST /api/conversations/:id/messages` com o mesmo corpo. `productIds` (até 2) inclui dados dos seus produtos como contexto.
+Retorna a conversa criada com as mensagens do usuário e do assistente. Mensagens seguintes: `POST /api/conversations/:id/messages` com o mesmo corpo. `productIds` (até 2) inclui nome, marca, categoria e ingredientes de produtos do catálogo público como contexto; ids fora do catálogo retornam `404`.
+
+O resultado da comparação é um retrato salvo no momento da criação. Comparações antigas, feitas com produtos pessoais, não têm `slug` e podem trazer `description`.
 
 ### Status da IA
 

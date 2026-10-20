@@ -9,7 +9,13 @@ export function normalizeSearchText(value: string): string {
 }
 
 export function searchTokens(value: string): string[] {
-  return [...new Set(normalizeSearchText(value).split(' ').filter((token) => token.length >= 2))];
+  return [
+    ...new Set(
+      normalizeSearchText(value)
+        .split(' ')
+        .filter((token) => token.length >= 2),
+    ),
+  ];
 }
 
 export function containsSearchPhrase(text: string, phrase: string): boolean {

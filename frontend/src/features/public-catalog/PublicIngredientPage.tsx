@@ -29,15 +29,16 @@ export function PublicIngredientPage() {
         description={summary}
         canonicalPath={`/catalogo/ingredientes/${data.id}`}
       />
-      <PageHeader
-        title={data.name}
-        back={{ to: '/catalogo/ingredientes', label: 'Referência de ingredientes' }}
-      />
+      <PageHeader title={data.name} back={{ to: '/catalogo/ingredientes', label: 'Referência de ingredientes' }} />
       <div className="flex flex-col gap-6">
         <IngredientReference ingredient={data} />
         <EducationalDisclaimer />
         <p className="text-sm text-ink-soft">
-          Consultas pessoais e histórico ficam disponíveis após <Link to="/entrar" className="font-semibold underline">entrar</Link>.
+          Consultas pessoais e histórico ficam disponíveis após{' '}
+          <Link to="/entrar" className="font-semibold underline">
+            entrar
+          </Link>
+          .
         </p>
       </div>
     </>

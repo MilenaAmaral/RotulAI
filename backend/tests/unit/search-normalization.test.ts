@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { containsSearchPhrase, normalizeSearchText, searchTokens } from '../../src/modules/catalog/search-normalization.js';
+import {
+  containsSearchPhrase,
+  normalizeSearchText,
+  searchTokens,
+} from '../../src/modules/catalog/search-normalization.js';
 
 describe('normalização de busca do catálogo', () => {
   it('remove diacríticos, normaliza separadores e não depende da ordem das palavras', () => {

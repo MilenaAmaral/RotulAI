@@ -2,6 +2,7 @@ import request from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { LlmProviderError } from '../../src/modules/ai/llm-provider.js';
 import {
+  createCatalogProduct,
   createProduct,
   createTestApp,
   FakeLlmProvider,
@@ -66,11 +67,11 @@ describe('assistente com IA', () => {
     expect(detail.body.messages).toHaveLength(4);
   });
 
-  it('inclui dados dos produtos do usuário como contexto delimitado', async () => {
+  it('inclui dados dos produtos do catálogo escolhidos como contexto delimitado', async () => {
     const provider = replyWith('Explicação.');
     const app = createTestApp(provider);
     const user = await registerUser(app);
-    const product = await createProduct(app, user, { name: 'Creme Contexto', ingredients: ['Aqua', 'Urea'] });
+    const product = await createCatalogProduct({ name: 'Creme Contexto', ingredients: ['Aqua', 'Urea'] });
 
     await request(app)
       .post('/api/conversations')
@@ -80,7 +81,7 @@ describe('assistente com IA', () => {
 
     expect(provider.calls[0]?.system).toContain('Creme Contexto');
     expect(provider.calls[0]?.system).toContain('Aqua, Urea');
-    expect(provider.calls[0]?.system).toContain('<dados tipo="produtos_cadastrados">');
+    expect(provider.calls[0]?.system).toContain('<dados tipo="produtos_selecionados">');
   });
 
   it('não salva conversa quando a IA falha e devolve erro claro', async () => {

@@ -1,8 +1,9 @@
 import type { Express } from 'express';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { AccessProfile } from '../src/generated/prisma/enums.js';
+import { AccessProfile, type ProductCategory } from '../src/generated/prisma/enums.js';
 import { prisma } from '../src/lib/prisma.js';
+import { slugify } from '../src/lib/slugify.js';
 import { AiService } from '../src/modules/ai/ai.service.js';
 import { resolveIngredientIds } from '../src/modules/ingredients/ingredient-resolver.js';
 import { productInputSchema } from '../src/modules/products/products.schemas.js';
@@ -102,6 +103,29 @@ export async function createProduct(app: Express, user: TestUser, overrides: Rec
     .set('Authorization', `Bearer ${user.token}`)
     .expect(200);
   return response.body as { id: string; ingredients: Array<{ id: string; name: string }> };
+}
+
+/** Cria um produto no catálogo público, resolvendo os ingredientes como o painel admin faz. */
+export async function createCatalogProduct(
+  overrides: Partial<{ name: string; brand: string; category: ProductCategory; ingredients: string[] }> = {},
+) {
+  counter += 1;
+  const name = overrides.name ?? `Produto Público ${counter}`;
+  const brand = overrides.brand ?? 'Marca Pública';
+  return prisma.$transaction(async (tx) => {
+    const ingredientIds = await resolveIngredientIds(tx, overrides.ingredients ?? ['Aqua', 'Glycerin', 'Niacinamide']);
+    return tx.catalogProduct.create({
+      data: {
+        slug: `${slugify(`${brand} ${name}`)}-${counter}`,
+        name,
+        brand,
+        category: overrides.category ?? 'SERUM',
+        ingredients: {
+          create: ingredientIds.map((ingredientId, index) => ({ ingredientId, position: index + 1 })),
+        },
+      },
+    });
+  });
 }
 
 export async function promoteUserToAdmin(user: TestUser): Promise<void> {
