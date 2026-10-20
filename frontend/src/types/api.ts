@@ -94,15 +94,8 @@ export interface PublicProduct {
   ingredients: ProductIngredient[];
 }
 
-export interface AdminProduct {
-  id: string;
-  slug: string;
-  name: string;
-  brand: string;
-  category: ProductCategory;
-  referenceUrl: string | null;
-  ingredients: Array<{ position: number; ingredient: IngredientSummary }>;
-}
+/** O admin recebe o mesmo formato do detalhe público. */
+export type AdminProduct = PublicProduct;
 
 export interface FavoriteProduct extends PublicProductListItem {
   referenceUrl: string | null;
@@ -231,6 +224,8 @@ export interface ComparedIngredient {
 
 export interface ComparisonProductSummary {
   id: string;
+  /** Presente nas comparações do catálogo público; ausente nas antigas, feitas com produtos pessoais. */
+  slug?: string | null;
   name: string;
   brand: string;
   category: ProductCategory;

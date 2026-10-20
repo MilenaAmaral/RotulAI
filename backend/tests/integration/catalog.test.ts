@@ -129,7 +129,7 @@ describe('catálogo público', () => {
       id: product.id,
       referenceUrl: 'https://example.test/product',
       ingredients: [
-        { name: 'Glycerin', position: 1, isCurated: true },
+        { name: 'Sodium Hyaluronate', position: 1, isCurated: true },
         { name: 'Ingredient Without Reference', position: 2, isCurated: false },
       ],
     });

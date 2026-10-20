@@ -4,18 +4,19 @@ import { buildPage } from '../../lib/pagination.js';
 import { prisma } from '../../lib/prisma.js';
 import type { AiService } from '../ai/ai.service.js';
 import { asUntrustedData, COMPARISON_GUIDANCE } from '../ai/prompts.js';
-import type { ProductWithIngredients } from '../products/products.service.js';
-import { findOwnedProduct } from '../products/products.service.js';
+import type { CatalogProductWithIngredients } from '../catalog/catalog.service.js';
+import { findCatalogProductById } from '../catalog/catalog.service.js';
 import type { ComparableProduct, ComparisonResult } from './compare-products.js';
 import { compareProducts } from './compare-products.js';
 
-function toComparable(product: ProductWithIngredients): ComparableProduct {
+function toComparable(product: CatalogProductWithIngredients): ComparableProduct {
   return {
     id: product.id,
+    slug: product.slug,
     name: product.name,
     brand: product.brand,
     category: product.category,
-    description: product.description,
+    description: null,
     ingredients: product.ingredients.map((item) => ({
       id: item.ingredient.id,
       name: item.ingredient.name,
@@ -35,13 +36,14 @@ function toComparisonDto(row: ComparisonRow) {
   };
 }
 
+/** Compara dois produtos do catálogo público e guarda o resultado no histórico do usuário. */
 export async function createComparison(userId: string, productAId: string, productBId: string) {
   if (productAId === productBId) {
     throw new AppError(400, 'VALIDATION_ERROR', 'Selecione dois produtos diferentes.');
   }
   const [productA, productB] = await Promise.all([
-    findOwnedProduct(userId, productAId),
-    findOwnedProduct(userId, productBId),
+    findCatalogProductById(productAId),
+    findCatalogProductById(productBId),
   ]);
   const result = compareProducts(toComparable(productA), toComparable(productB));
   const row = await prisma.productComparison.create({
@@ -81,11 +83,14 @@ export async function listComparisons(userId: string, page: number, pageSize: nu
 export function describeComparisonForAi(result: ComparisonResult): string {
   const list = (items: Array<{ name: string }>) =>
     items.length ? items.map((item) => item.name).join(', ') : 'nenhum';
+  const describe = (label: string, product: ComparisonResult['productA']) => [
+    `Produto ${label}: ${product.name} (${product.brand}), categoria ${product.category}.`,
+    // Só comparações antigas (produtos pessoais) têm descrição.
+    ...(product.description ? [`Descrição ${label}: ${product.description}`] : []),
+  ];
   return [
-    `Produto A: ${result.productA.name} (${result.productA.brand}), categoria ${result.productA.category}.`,
-    `Descrição A: ${result.productA.description ?? 'não informada'}`,
-    `Produto B: ${result.productB.name} (${result.productB.brand}), categoria ${result.productB.category}.`,
-    `Descrição B: ${result.productB.description ?? 'não informada'}`,
+    ...describe('A', result.productA),
+    ...describe('B', result.productB),
     `Ingredientes em comum: ${list(result.commonIngredients)}`,
     `Exclusivos do produto A: ${list(result.exclusiveToA)}`,
     `Exclusivos do produto B: ${list(result.exclusiveToB)}`,

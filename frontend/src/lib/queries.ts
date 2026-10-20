@@ -19,8 +19,6 @@ import type {
   Page,
   Product,
   ProductCategory,
-  ProductInput,
-  ProductListItem,
   PublicIngredient,
   PublicIngredientSummary,
   PublicProduct,
@@ -35,7 +33,6 @@ import { api, toQueryString } from './api';
 export const queryKeys = {
   dashboard: ['dashboard'] as const,
   products: ['products'] as const,
-  productList: (params: object) => ['products', 'list', params] as const,
   product: (id: string) => ['products', 'detail', id] as const,
   ingredients: (params: object) => ['ingredients', params] as const,
   ingredient: (id: string) => ['ingredient', id] as const,
@@ -55,10 +52,10 @@ export const queryKeys = {
   publicIngredients: (params: object) => ['public-catalog', 'ingredients', params] as const,
   publicIngredient: (id: string) => ['public-catalog', 'ingredient', id] as const,
   publicIngredientFunctions: ['public-catalog', 'ingredient-functions'] as const,
-  favorites: (page: number) => ['favorites', page] as const,
+  // O pageSize faz parte da chave: o dashboard pede 1 item só para ler o total.
+  favorites: (page: number, pageSize: number) => ['favorites', page, pageSize] as const,
   favoriteStatus: (id: string) => ['favorite-status', id] as const,
   adminProducts: (params: object) => ['admin', 'products', params] as const,
-  adminProduct: (id: string) => ['admin', 'product', id] as const,
   adminIngredients: (params: object) => ['admin', 'ingredients', params] as const,
   adminSearchSynonyms: ['admin', 'search-synonyms'] as const,
   adminRecommendationRules: ['admin', 'recommendation-rules'] as const,
@@ -107,7 +104,7 @@ export const usePublicIngredientFunctions = () =>
 // ---------- Favoritos ----------
 export const useFavorites = (page = 1, pageSize = 12) =>
   useQuery({
-    queryKey: queryKeys.favorites(page),
+    queryKey: queryKeys.favorites(page, pageSize),
     queryFn: () => api<Page<FavoriteProduct>>(`/api/favorites${toQueryString({ page, pageSize })}`),
     placeholderData: keepPreviousData,
   });
@@ -136,13 +133,6 @@ export const useAdminProducts = (params: ProductListParams) =>
     queryKey: queryKeys.adminProducts(params),
     queryFn: () => api<PublicProductSearchPage>(`/api/admin/products${toQueryString({ ...params })}`),
     placeholderData: keepPreviousData,
-  });
-
-export const useAdminProduct = (id: string | undefined) =>
-  useQuery({
-    queryKey: queryKeys.adminProduct(id ?? ''),
-    queryFn: () => api<AdminProduct>(`/api/admin/products/${id}`),
-    enabled: Boolean(id),
   });
 
 export function useSaveAdminProduct(id?: string) {
@@ -277,13 +267,7 @@ export interface ProductListParams {
   pageSize?: number;
 }
 
-export const useProducts = (params: ProductListParams) =>
-  useQuery({
-    queryKey: queryKeys.productList(params),
-    queryFn: () => api<Page<ProductListItem>>(`/api/products${toQueryString({ ...params })}`),
-    placeholderData: keepPreviousData,
-  });
-
+/** Detalhe de um produto pessoal legado (registros anteriores ao catálogo público). */
 export const useProduct = (id: string | undefined) =>
   useQuery({
     queryKey: queryKeys.product(id ?? ''),
@@ -295,25 +279,6 @@ function useInvalidate() {
   const client = useQueryClient();
   return (...keys: ReadonlyArray<readonly unknown[]>) =>
     Promise.all(keys.map((queryKey) => client.invalidateQueries({ queryKey })));
-}
-
-export function useSaveProduct(id?: string) {
-  const invalidate = useInvalidate();
-  return useMutation({
-    mutationFn: (input: ProductInput) =>
-      id
-        ? api<Product>(`/api/products/${id}`, { method: 'PUT', body: input })
-        : api<Product>('/api/products', { method: 'POST', body: input }),
-    onSuccess: () => invalidate(queryKeys.products, queryKeys.dashboard),
-  });
-}
-
-export function useDeleteProduct() {
-  const invalidate = useInvalidate();
-  return useMutation({
-    mutationFn: (id: string) => api<void>(`/api/products/${id}`, { method: 'DELETE' }),
-    onSuccess: () => invalidate(queryKeys.products, queryKeys.dashboard),
-  });
 }
 
 // ---------- Ingredientes ----------

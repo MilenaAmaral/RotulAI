@@ -4,6 +4,7 @@ import { compareProducts } from '../../src/modules/comparisons/compare-products.
 
 const product = (id: string, names: string[], overrides: Partial<ComparableProduct> = {}): ComparableProduct => ({
   id,
+  slug: `produto-${id}`,
   name: `Produto ${id}`,
   brand: 'Marca X',
   category: 'SERUM',

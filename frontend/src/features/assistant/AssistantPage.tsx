@@ -16,7 +16,7 @@ import {
   useConversation,
   useConversations,
   useDeleteHistoryItem,
-  useProducts,
+  useFavorites,
   useSendMessage,
 } from '../../lib/queries';
 import type { ChatMessage } from '../../types/api';
@@ -78,15 +78,16 @@ function MessageBubble({ message }: { message: Pick<ChatMessage, 'role' | 'conte
   );
 }
 
+/** Permite usar até 2 favoritos do catálogo público como contexto da conversa. */
 function ProductContextPicker({ selected, onChange }: { selected: string[]; onChange: (ids: string[]) => void }) {
-  const products = useProducts({ pageSize: 200 });
+  const products = useFavorites(1, 50);
   if (!products.data || products.data.items.length === 0) return null;
   const toggle = (id: string) =>
     onChange(selected.includes(id) ? selected.filter((item) => item !== id) : [...selected, id].slice(-2));
   return (
     <details className="group text-sm" open={selected.length > 0}>
       <summary className="cursor-pointer list-none font-medium text-ink-soft hover:text-graphite [&::-webkit-details-marker]:hidden">
-        Usar produtos como contexto {selected.length > 0 ? `(${selected.length} de 2)` : '(opcional)'}
+        Usar favoritos como contexto {selected.length > 0 ? `(${selected.length} de 2)` : '(opcional)'}
       </summary>
       <fieldset className="mt-2 flex max-h-36 flex-col gap-1 overflow-y-auto rounded-[var(--radius-control)] border border-line p-2">
         <legend className="sr-only">Selecione até 2 produtos</legend>
