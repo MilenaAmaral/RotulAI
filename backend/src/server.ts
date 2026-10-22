@@ -14,25 +14,29 @@ const ai = new AiService(createLlmProvider(env), prisma, {
 });
 
 const app = createApp({ ai });
-const server = app.listen(env.PORT, () => {
-  const status = ai.status();
-  logger.info(
-    { port: env.PORT, ai: status.enabled ? `${status.provider} (${status.model})` : 'desabilitada' },
-    `Rotulai API em http://localhost:${env.PORT} | documentação em /api/docs`,
-  );
-  if (!status.enabled) logger.warn(status.setupInstructions);
-});
-
-const retentionTimer = scheduleRetentionJob();
-
-function shutdown(signal: string) {
-  logger.info({ signal }, 'Encerrando servidor');
-  clearInterval(retentionTimer);
-  server.close(() => {
-    void prisma.$disconnect().finally(() => process.exit(0));
+if (process.env.VERCEL !== '1') {
+  const server = app.listen(env.PORT, () => {
+    const status = ai.status();
+    logger.info(
+      { port: env.PORT, ai: status.enabled ? `${status.provider} (${status.model})` : 'desabilitada' },
+      `Rotulai API em http://localhost:${env.PORT} | documentação em /api/docs`,
+    );
+    if (!status.enabled) logger.warn(status.setupInstructions);
   });
-  setTimeout(() => process.exit(1), 10000).unref();
+
+  const retentionTimer = scheduleRetentionJob();
+
+  function shutdown(signal: string) {
+    logger.info({ signal }, 'Encerrando servidor');
+    clearInterval(retentionTimer);
+    server.close(() => {
+      void prisma.$disconnect().finally(() => process.exit(0));
+    });
+    setTimeout(() => process.exit(1), 10000).unref();
+  }
+
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
 
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
+export default app;

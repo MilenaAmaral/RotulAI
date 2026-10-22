@@ -231,29 +231,30 @@ Reinicie a API. Sem a chave, o assistente e os botões de explicação mostram c
 
 ### Back-end (`backend/.env`)
 
-| Variável                              | Padrão                  | Descrição                                         |
-| ------------------------------------- | ----------------------- | ------------------------------------------------- |
-| `DATABASE_URL`                        | obrigatória             | Conexão PostgreSQL.                               |
-| `TEST_DATABASE_URL`                   | `.../rotulai_test`      | Banco dos testes (nome deve terminar em `_test`). |
-| `PORT`                                | `3333`                  | Porta da API.                                     |
-| `CORS_ORIGINS`                        | `http://localhost:5173` | Origens permitidas, separadas por vírgula.        |
-| `TRUST_PROXY`                         | `0`                     | Proxies confiáveis (use `1` em Render/Railway).   |
-| `JWT_ACCESS_SECRET`                   | obrigatória             | Segredo do access token (mín. 32 caracteres).     |
-| `ACCESS_TOKEN_TTL_MINUTES`            | `15`                    | Validade do access token.                         |
-| `REFRESH_TOKEN_TTL_DAYS`              | `7`                     | Validade do refresh token.                        |
-| `COOKIE_SAMESITE` / `COOKIE_SECURE`   | `lax` / automático      | Política do cookie de sessão.                     |
-| `BCRYPT_ROUNDS`                       | `12`                    | Custo do hash de senha.                           |
-| `AI_PROVIDER`                         | `anthropic`             | `anthropic` ou `none`.                            |
-| `ANTHROPIC_API_KEY`                   | vazio                   | Chave da IA (somente servidor).                   |
-| `AI_MODEL`                            | `claude-haiku-5-5`      | Modelo utilizado.                                 |
-| `AI_TIMEOUT_MS`                       | `30000`                 | Tempo limite por chamada.                         |
-| `AI_MAX_INPUT_CHARS`                  | `2000`                  | Tamanho máximo da mensagem.                       |
-| `AI_MAX_OUTPUT_TOKENS`                | `1024`                  | Tamanho máximo da resposta.                       |
-| `AI_HISTORY_MESSAGES`                 | `12`                    | Mensagens anteriores enviadas como contexto.      |
-| `AI_RATE_LIMIT_PER_MINUTE`            | `10`                    | Requisições de IA por usuário por minuto.         |
-| `AI_DAILY_LIMIT_PER_USER`             | `100`                   | Chamadas de IA por usuário em 24 h.               |
-| `HISTORY_RETENTION_DAYS`              | `180`                   | Retenção do histórico.                            |
-| `BOOTSTRAP_ADMIN_EMAIL` / `_PASSWORD` | vazio                   | Usadas apenas por `admin:bootstrap`.              |
+| Variável                              | Padrão                  | Descrição                                                                          |
+| ------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------- |
+| `DATABASE_URL`                        | obrigatória             | Conexão PostgreSQL.                                                                |
+| `TEST_DATABASE_URL`                   | `.../rotulai_test`      | Banco dos testes (nome deve terminar em `_test`).                                  |
+| `PORT`                                | `3333`                  | Porta da API.                                                                      |
+| `CORS_ORIGINS`                        | `http://localhost:5173` | Origens permitidas, separadas por vírgula.                                         |
+| `TRUST_PROXY`                         | `0`                     | Proxies confiáveis (use `1` em Render/Railway).                                    |
+| `CRON_SECRET`                         | vazio                   | Segredo de pelo menos 32 caracteres para Vercel Cron; vazio desabilita o endpoint. |
+| `JWT_ACCESS_SECRET`                   | obrigatória             | Segredo do access token (mín. 32 caracteres).                                      |
+| `ACCESS_TOKEN_TTL_MINUTES`            | `15`                    | Validade do access token.                                                          |
+| `REFRESH_TOKEN_TTL_DAYS`              | `7`                     | Validade do refresh token.                                                         |
+| `COOKIE_SAMESITE` / `COOKIE_SECURE`   | `lax` / automático      | Política do cookie de sessão.                                                      |
+| `BCRYPT_ROUNDS`                       | `12`                    | Custo do hash de senha.                                                            |
+| `AI_PROVIDER`                         | `anthropic`             | `anthropic` ou `none`.                                                             |
+| `ANTHROPIC_API_KEY`                   | vazio                   | Chave da IA (somente servidor).                                                    |
+| `AI_MODEL`                            | `claude-haiku-5-5`      | Modelo utilizado.                                                                  |
+| `AI_TIMEOUT_MS`                       | `30000`                 | Tempo limite por chamada.                                                          |
+| `AI_MAX_INPUT_CHARS`                  | `2000`                  | Tamanho máximo da mensagem.                                                        |
+| `AI_MAX_OUTPUT_TOKENS`                | `1024`                  | Tamanho máximo da resposta.                                                        |
+| `AI_HISTORY_MESSAGES`                 | `12`                    | Mensagens anteriores enviadas como contexto.                                       |
+| `AI_RATE_LIMIT_PER_MINUTE`            | `10`                    | Requisições de IA por usuário por minuto.                                          |
+| `AI_DAILY_LIMIT_PER_USER`             | `100`                   | Chamadas de IA por usuário em 24 h.                                                |
+| `HISTORY_RETENTION_DAYS`              | `180`                   | Retenção do histórico.                                                             |
+| `BOOTSTRAP_ADMIN_EMAIL` / `_PASSWORD` | vazio                   | Usadas apenas por `admin:bootstrap`.                                               |
 
 ### Front-end (`frontend/.env`)
 
@@ -292,6 +293,7 @@ Documentação interativa (Swagger UI): `http://localhost:3333/api/docs` · espe
 | Método              | Rota                                                        | Descrição                                                         |
 | ------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- |
 | GET                 | `/api/health`                                               | Health check (API e banco)                                        |
+| GET                 | `/api/cron/retention`                                       | Limpeza agendada, protegida por `CRON_SECRET`                     |
 | POST                | `/api/auth/register` · `/login` · `/refresh` · `/logout`    | Sessão                                                            |
 | GET / DELETE        | `/api/auth/me`                                              | Usuário atual / excluir conta                                     |
 | GET                 | `/api/dashboard`                                            | Indicadores e atividades                                          |
@@ -321,7 +323,7 @@ npm start -w backend # executa a API compilada
 
 ### Vercel (front-end e API no mesmo projeto)
 
-O `vercel.json` da raiz usa [Vercel Services](https://vercel.com/docs/services) (beta): o front-end responde em `/` e a API em `/api`, no mesmo domínio. Assim o cookie de sessão funciona com `COOKIE_SAMESITE=lax` e `VITE_API_URL` fica vazio. Não há chamadas entre servidores, então nenhum _binding_ é necessário.
+O `vercel.json` da raiz usa [Vercel Services](https://vercel.com/docs/services) (beta): o front-end responde em `/` e a API em `/api`, no mesmo domínio. Assim o cookie de sessão funciona com `COOKIE_SAMESITE=lax` e `VITE_API_URL` fica vazio. Não há chamadas entre servidores, então nenhum _binding_ é necessário. Consulte [docs/deploy-vercel.md](docs/deploy-vercel.md) para a preparação do banco, variáveis, migrações e Cron.
 
 | Serviço    | Pasta      | Caminho público | Build                                          |
 | ---------- | ---------- | --------------- | ---------------------------------------------- |
@@ -355,7 +357,8 @@ No PowerShell, defina antes cada variável com `$env:DATABASE_URL="<url-direta>"
 
 Particularidades da execução como função da Vercel:
 
-- A API roda como Vercel Function. A rotina de retenção roda quando uma instância inicia, e não a cada 24 horas garantidas; para uma execução diária fixa, use um [Cron Job](https://vercel.com/docs/cron-jobs).
+- A rotina diária usa [Vercel Cron](https://vercel.com/docs/cron-jobs), configurado para 05:17 UTC. O endpoint requer `CRON_SECRET`; sem ele retorna `503` e não apaga dados.
+- O pool PostgreSQL da API limita cada instância a cinco conexões; confira os limites do provedor e use a URL _pooled_ apropriada.
 - O rate limit fica em memória por instância, então os limites valem por instância e não globalmente.
 - A Vercel não serve arquivos com `express.static()`, então a interface do Swagger em `/api/docs` pode não carregar. A especificação em `/api/docs.json` continua disponível.
 

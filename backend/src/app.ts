@@ -21,6 +21,7 @@ import { conversationsRouter } from './modules/conversations/conversations.route
 import { ingredientAnalysesRouter, ingredientsRouter } from './modules/ingredients/ingredients.routes.js';
 import { miscRouter } from './modules/misc.routes.js';
 import { productsRouter } from './modules/products/products.routes.js';
+import { retentionRouter } from './modules/history/retention.routes.js';
 
 export interface AppDependencies {
   ai: AiService;
@@ -95,6 +96,7 @@ export function createApp({ ai }: AppDependencies): express.Express {
 
   api.use('/catalog', catalogRouter());
   api.use('/auth', authRouter());
+  api.use('/cron', retentionRouter());
 
   // Todas as rotas abaixo exigem autenticação.
   api.use(requireAuth);
