@@ -24,7 +24,7 @@ export function RegisterPage() {
     setSubmitError(null);
     try {
       await createAccount(values.name, values.email, values.password);
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (error) {
       setSubmitError(error);
     }

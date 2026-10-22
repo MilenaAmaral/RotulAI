@@ -14,6 +14,16 @@ function lazyPage<M extends Record<string, unknown>>(loader: () => Promise<M>, n
 
 const router = createBrowserRouter([
   {
+    path: '/',
+    element: <PublicCatalogLayout />,
+    children: [
+      {
+        index: true,
+        lazy: lazyPage(() => import('./features/public-catalog/LandingPage'), 'LandingPage'),
+      },
+    ],
+  },
+  {
     path: '/catalogo',
     element: <PublicCatalogLayout />,
     children: [
@@ -48,7 +58,7 @@ const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          { path: '/', element: <DashboardPage /> },
+          { path: '/dashboard', element: <DashboardPage /> },
           { path: '/produtos', lazy: lazyPage(() => import('./features/favorites/FavoritesPage'), 'FavoritesPage') },
           { path: '/favoritos', lazy: lazyPage(() => import('./features/favorites/FavoritesPage'), 'FavoritesPage') },
           {
