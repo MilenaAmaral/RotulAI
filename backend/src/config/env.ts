@@ -12,6 +12,10 @@ const envSchema = z.object({
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
   // Quantidade de proxies confiáveis à frente da API (ex.: 1 no Render/Railway).
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
+  CRON_SECRET: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.string().min(32, 'CRON_SECRET deve ter pelo menos 32 caracteres').optional(),
+  ),
 
   JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET deve ter pelo menos 32 caracteres'),
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().min(1).max(60).default(15),

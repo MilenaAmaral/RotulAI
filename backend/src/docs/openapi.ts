@@ -161,6 +161,27 @@ export function buildOpenApiDocument() {
           responses: { 200: json('Serviço saudável'), 503: json('Banco indisponível') },
         },
       },
+      '/cron/retention': {
+        get: {
+          tags: ['Sistema'],
+          summary: 'Executa a limpeza agendada do histórico',
+          description: 'Endpoint interno para Vercel Cron. Requer Authorization: Bearer <CRON_SECRET>.',
+          parameters: [
+            {
+              name: 'Authorization',
+              in: 'header',
+              required: true,
+              schema: { type: 'string' },
+              description: 'Segredo de cron configurado no servidor.',
+            },
+          ],
+          responses: {
+            200: json('Limpeza executada'),
+            401: errors[401],
+            503: json('CRON_SECRET não configurado'),
+          },
+        },
+      },
       '/catalog/products': {
         get: {
           tags: ['Catálogo público'],

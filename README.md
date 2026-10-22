@@ -1,8 +1,8 @@
 # Rotulai
 
-Plataforma full stack para organizar cosméticos, entender ingredientes de rótulos e comparar produtos, com um assistente de inteligência artificial integrado pelo servidor.
+Plataforma full stack para explorar cosméticos, consultar ingredientes de rótulos e comparar produtos, com um assistente de inteligência artificial integrado pelo servidor.
 
-![Dashboard do Rotulai](docs/screenshots/dashboard.png)
+![Capa do RotulAI](frontend/public/capa_rotuloai.jpg)
 
 > **Aviso:** o Rotulai fornece informações educacionais. Não diagnostica doenças, não prescreve tratamentos, não garante ausência de alergias e não substitui a orientação de um dermatologista.
 
@@ -10,6 +10,7 @@ Plataforma full stack para organizar cosméticos, entender ingredientes de rótu
 
 - [Problema](#problema)
 - [Funcionalidades](#funcionalidades)
+- [Rotas da aplicação](#rotas-da-aplicação)
 - [Tecnologias](#tecnologias)
 - [Arquitetura](#arquitetura)
 - [Estrutura de pastas](#estrutura-de-pastas)
@@ -38,6 +39,7 @@ Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas 
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Autenticação**           | Cadastro, login, sessão persistente com rotação de refresh token, logout e exclusão de conta com todos os dados.                                                                                                                                                           |
 | **Página inicial pública** | A rota `/` apresenta o RotulAI e uma amostra do catálogo sem exigir login; o dashboard autenticado está em `/dashboard`.                                                                                                                                                   |
+| **Tema**                   | Alternância entre modos claro e escuro em páginas públicas, autenticadas e de acesso; na primeira visita respeita o sistema e salva a escolha no navegador.                                                                                                                |
 | **Dashboard**              | Em `/dashboard`, apresenta saudação, indicadores reais (favoritos, ingredientes consultados, comparações, conversas), atividade recente e acessos rápidos.                                                                                                                 |
 | **Catálogo público**       | Páginas sem login em `/catalogo` e `/catalogo/ingredientes`, com busca tolerante a erros de digitação e por sinônimos ("filtro solar" encontra protetores), sugestões, filtros, fontes e metadados por página.                                                             |
 | **Favoritos**              | Pessoas logadas salvam produtos do catálogo público. Os favoritos alimentam o comparador e o contexto do assistente.                                                                                                                                                       |
@@ -47,15 +49,28 @@ Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas 
 | **Assistente Rotulai**     | Chat com histórico, sugestões iniciais, contexto opcional de até 2 favoritos, limite de caracteres, indicador de digitação e mensagens claras de indisponibilidade.                                                                                                        |
 | **Histórico**              | Consultas de ingredientes, comparações e conversas persistidas no PostgreSQL, com exclusão individual, limpeza por tipo e política de retenção visível ao usuário.                                                                                                         |
 
+### Rotas da aplicação
+
+As páginas públicas não exigem conta. As áreas pessoais redirecionam visitantes para o login e retornam à rota solicitada após a autenticação.
+
+| Acesso            | Rotas                                                                                                                                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Público           | `/` (página inicial), `/catalogo`, `/catalogo/produtos/:slug`, `/catalogo/ingredientes`, `/catalogo/ingredientes/:id`                                                                                                 |
+| Autenticação      | `/entrar`, `/cadastro`                                                                                                                                                                                                |
+| Conta autenticada | `/dashboard`, `/favoritos`, `/produtos`, `/produtos/:id`, `/ingredientes`, `/ingredientes/:id`, `/ingredientes/consultas/:id`, `/comparar`, `/comparar/:id`, `/assistente`, `/assistente/:id`, `/historico`, `/conta` |
+| Administrador     | `/admin` (perfil `ADMIN`)                                                                                                                                                                                             |
+
+`/produtos` é mantida como rota legada da área de favoritos. A rota pública de catálogo `/catalogo/ingredientes` é diferente da área autenticada `/ingredientes`.
+
 ### Telas
 
-| Comparação                                     | Detalhe do produto                       | Celular                                 |
-| ---------------------------------------------- | ---------------------------------------- | --------------------------------------- |
-| ![Comparação](docs/screenshots/comparacao.png) | ![Produto](docs/screenshots/produto.png) | ![Celular](docs/screenshots/mobile.png) |
+| Dashboard                                    | Comparação                                     | Detalhe do produto                       | Celular                                 |
+| -------------------------------------------- | ---------------------------------------------- | ---------------------------------------- | --------------------------------------- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Comparação](docs/screenshots/comparacao.png) | ![Produto](docs/screenshots/produto.png) | ![Celular](docs/screenshots/mobile.png) |
 
 ## Tecnologias
 
-**Front-end:** React 19, TypeScript, Vite, Tailwind CSS 4, React Router, TanStack Query, React Hook Form, Zod, Lucide React.
+**Front-end:** React 19, TypeScript, Vite, Tailwind CSS 4 com tokens CSS para os temas claro/escuro, React Router, TanStack Query, React Hook Form, Zod, Lucide React.
 
 **Back-end:** Node.js, TypeScript, Express 5, Zod, Prisma ORM 7 (adapter `pg`), PostgreSQL 16 (com `pg_trgm` e `unaccent` para a busca), Swagger UI / OpenAPI 3.1, Helmet, express-rate-limit, bcrypt, JWT, Pino.
 
@@ -81,6 +96,7 @@ Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas 
 ```
 
 - O front-end só conversa com a API. A chave de IA existe apenas no servidor.
+- `ThemeProvider` compartilha a preferência de tema da interface; a escolha fica no `localStorage` do navegador e não contém dados de autenticação.
 - Regras de negócio, validações e acesso a dados ficam no back-end, organizados por módulo (`routes` → `service` → Prisma).
 - A comparação de produtos é uma função pura (`compare-products.ts`), testável sem banco.
 - A IA passa por `AiService`, que aplica tempo limite, cota diária, validação da resposta e conversão de erros, independentemente do provedor.
@@ -109,7 +125,10 @@ Rotulai/
 │   │   ├── components/      # layout e componentes reutilizáveis
 │   │   ├── features/        # páginas por domínio
 │   │   ├── lib/             # cliente HTTP, queries, formatação
-│   │   └── types/           # contratos da API
+│   │   ├── theme/           # estado global e persistência do tema
+│   │   ├── types/           # contratos da API
+│   │   └── index.css        # tokens visuais e estilos globais
+│   ├── public/              # favicon e capa estática do site
 │   └── tests/
 ├── docs/                    # arquitetura, API e capturas de tela
 ├── docker/                  # script de inicialização do PostgreSQL
@@ -149,6 +168,7 @@ cp frontend/.env.example frontend/.env
 ```
 
 No Windows (PowerShell): `Copy-Item backend/.env.example backend/.env`.
+Copie também `frontend/.env.example` para `frontend/.env` se for configurar uma URL de API diferente.
 
 Edite `backend/.env` e defina um `JWT_ACCESS_SECRET` aleatório:
 
@@ -211,29 +231,30 @@ Reinicie a API. Sem a chave, o assistente e os botões de explicação mostram c
 
 ### Back-end (`backend/.env`)
 
-| Variável                              | Padrão                  | Descrição                                         |
-| ------------------------------------- | ----------------------- | ------------------------------------------------- |
-| `DATABASE_URL`                        | obrigatória             | Conexão PostgreSQL.                               |
-| `TEST_DATABASE_URL`                   | `.../rotulai_test`      | Banco dos testes (nome deve terminar em `_test`). |
-| `PORT`                                | `3333`                  | Porta da API.                                     |
-| `CORS_ORIGINS`                        | `http://localhost:5173` | Origens permitidas, separadas por vírgula.        |
-| `TRUST_PROXY`                         | `0`                     | Proxies confiáveis (use `1` em Render/Railway).   |
-| `JWT_ACCESS_SECRET`                   | obrigatória             | Segredo do access token (mín. 32 caracteres).     |
-| `ACCESS_TOKEN_TTL_MINUTES`            | `15`                    | Validade do access token.                         |
-| `REFRESH_TOKEN_TTL_DAYS`              | `7`                     | Validade do refresh token.                        |
-| `COOKIE_SAMESITE` / `COOKIE_SECURE`   | `lax` / automático      | Política do cookie de sessão.                     |
-| `BCRYPT_ROUNDS`                       | `12`                    | Custo do hash de senha.                           |
-| `AI_PROVIDER`                         | `anthropic`             | `anthropic` ou `none`.                            |
-| `ANTHROPIC_API_KEY`                   | vazio                   | Chave da IA (somente servidor).                   |
-| `AI_MODEL`                            | `claude-haiku-5-5`      | Modelo utilizado.                                 |
-| `AI_TIMEOUT_MS`                       | `30000`                 | Tempo limite por chamada.                         |
-| `AI_MAX_INPUT_CHARS`                  | `2000`                  | Tamanho máximo da mensagem.                       |
-| `AI_MAX_OUTPUT_TOKENS`                | `1024`                  | Tamanho máximo da resposta.                       |
-| `AI_HISTORY_MESSAGES`                 | `12`                    | Mensagens anteriores enviadas como contexto.      |
-| `AI_RATE_LIMIT_PER_MINUTE`            | `10`                    | Requisições de IA por usuário por minuto.         |
-| `AI_DAILY_LIMIT_PER_USER`             | `100`                   | Chamadas de IA por usuário em 24 h.               |
-| `HISTORY_RETENTION_DAYS`              | `180`                   | Retenção do histórico.                            |
-| `BOOTSTRAP_ADMIN_EMAIL` / `_PASSWORD` | vazio                   | Usadas apenas por `admin:bootstrap`.              |
+| Variável                              | Padrão                  | Descrição                                                                          |
+| ------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------- |
+| `DATABASE_URL`                        | obrigatória             | Conexão PostgreSQL.                                                                |
+| `TEST_DATABASE_URL`                   | `.../rotulai_test`      | Banco dos testes (nome deve terminar em `_test`).                                  |
+| `PORT`                                | `3333`                  | Porta da API.                                                                      |
+| `CORS_ORIGINS`                        | `http://localhost:5173` | Origens permitidas, separadas por vírgula.                                         |
+| `TRUST_PROXY`                         | `0`                     | Proxies confiáveis (use `1` em Render/Railway).                                    |
+| `CRON_SECRET`                         | vazio                   | Segredo de pelo menos 32 caracteres para Vercel Cron; vazio desabilita o endpoint. |
+| `JWT_ACCESS_SECRET`                   | obrigatória             | Segredo do access token (mín. 32 caracteres).                                      |
+| `ACCESS_TOKEN_TTL_MINUTES`            | `15`                    | Validade do access token.                                                          |
+| `REFRESH_TOKEN_TTL_DAYS`              | `7`                     | Validade do refresh token.                                                         |
+| `COOKIE_SAMESITE` / `COOKIE_SECURE`   | `lax` / automático      | Política do cookie de sessão.                                                      |
+| `BCRYPT_ROUNDS`                       | `12`                    | Custo do hash de senha.                                                            |
+| `AI_PROVIDER`                         | `anthropic`             | `anthropic` ou `none`.                                                             |
+| `ANTHROPIC_API_KEY`                   | vazio                   | Chave da IA (somente servidor).                                                    |
+| `AI_MODEL`                            | `claude-haiku-5-5`      | Modelo utilizado.                                                                  |
+| `AI_TIMEOUT_MS`                       | `30000`                 | Tempo limite por chamada.                                                          |
+| `AI_MAX_INPUT_CHARS`                  | `2000`                  | Tamanho máximo da mensagem.                                                        |
+| `AI_MAX_OUTPUT_TOKENS`                | `1024`                  | Tamanho máximo da resposta.                                                        |
+| `AI_HISTORY_MESSAGES`                 | `12`                    | Mensagens anteriores enviadas como contexto.                                       |
+| `AI_RATE_LIMIT_PER_MINUTE`            | `10`                    | Requisições de IA por usuário por minuto.                                          |
+| `AI_DAILY_LIMIT_PER_USER`             | `100`                   | Chamadas de IA por usuário em 24 h.                                                |
+| `HISTORY_RETENTION_DAYS`              | `180`                   | Retenção do histórico.                                                             |
+| `BOOTSTRAP_ADMIN_EMAIL` / `_PASSWORD` | vazio                   | Usadas apenas por `admin:bootstrap`.                                               |
 
 ### Front-end (`frontend/.env`)
 
@@ -263,7 +284,7 @@ O back-end cobre:
 - falhas da integração com IA (não configurada, indisponível, tempo limite, resposta inválida, cota) usando um provedor de teste;
 - retenção de dados, CORS, cabeçalhos de segurança e tratamento central de erros (inclusive conflitos do banco).
 
-O front-end testa a visualização da comparação, o painel admin de produtos (edição sem quebrar nomes como "1,2-Hexanediol"), a leitura dos campos do admin, a renderização segura do texto da IA, os metadados das páginas públicas e o parser de ingredientes.
+O front-end testa a visualização da comparação, o painel admin de produtos (edição sem quebrar nomes como "1,2-Hexanediol"), a leitura dos campos do admin, a renderização segura do texto da IA, os metadados das páginas públicas, a landing page, os redirecionamentos de login, a persistência do tema e o parser de ingredientes.
 
 ## API
 
@@ -272,11 +293,13 @@ Documentação interativa (Swagger UI): `http://localhost:3333/api/docs` · espe
 | Método              | Rota                                                        | Descrição                                                         |
 | ------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- |
 | GET                 | `/api/health`                                               | Health check (API e banco)                                        |
+| GET                 | `/api/cron/retention`                                       | Limpeza agendada, protegida por `CRON_SECRET`                     |
 | POST                | `/api/auth/register` · `/login` · `/refresh` · `/logout`    | Sessão                                                            |
 | GET / DELETE        | `/api/auth/me`                                              | Usuário atual / excluir conta                                     |
 | GET                 | `/api/dashboard`                                            | Indicadores e atividades                                          |
 | GET                 | `/api/catalog/products` · `/api/catalog/products/:slug`     | Catálogo público, busca/filtro e detalhe (sem login)              |
 | GET                 | `/api/catalog/ingredients` · `/api/catalog/ingredients/:id` | Ingredientes curados públicos, busca/filtro e detalhe (sem login) |
+| GET                 | `/api/catalog/ingredients/functions`                        | Funções disponíveis para filtro público de ingredientes           |
 | GET / PUT / DELETE  | `/api/favorites` · `/api/favorites/:productId`              | Listar / salvar / remover favoritos                               |
 | GET                 | `/api/products` · `/api/products/:id`                       | Produtos pessoais legados (somente leitura para `FREE`)           |
 | GET                 | `/api/ingredients` · `/api/ingredients/:id`                 | Base de ingredientes                                              |
@@ -300,12 +323,12 @@ npm start -w backend # executa a API compilada
 
 ### Vercel (front-end e API no mesmo projeto)
 
-O `vercel.json` da raiz usa [Vercel Services](https://vercel.com/docs/services) (beta): o front-end responde em `/` e a API em `/api`, no mesmo domínio. Assim o cookie de sessão funciona com `COOKIE_SAMESITE=lax` e `VITE_API_URL` fica vazio. Não há chamadas entre servidores, então nenhum _binding_ é necessário.
+O `vercel.json` da raiz usa [Vercel Services](https://vercel.com/docs/services) (beta): o front-end responde em `/` e a API em `/api`, no mesmo domínio. Assim o cookie de sessão funciona com `COOKIE_SAMESITE=lax` e `VITE_API_URL` fica vazio. Não há chamadas entre servidores, então nenhum _binding_ é necessário. Consulte [docs/deploy-vercel.md](docs/deploy-vercel.md) para a preparação do banco, variáveis, migrações e Cron.
 
-| Serviço    | Pasta      | Caminho público | Build                                          |
-| ---------- | ---------- | --------------- | ---------------------------------------------- |
-| `frontend` | `frontend` | `/`             | `npm run build` → `dist` (com fallback SPA)    |
-| `backend`  | `backend`  | `/api`          | `npm run db:generate`; entrada `src/server.ts` |
+| Serviço    | Pasta      | Caminho público | Build                                         |
+| ---------- | ---------- | --------------- | --------------------------------------------- |
+| `frontend` | `frontend` | `/`             | `npm run build` → `dist` (com fallback SPA)   |
+| `backend`  | `backend`  | `/api`          | `npm run db:generate`; entrada `src/index.ts` |
 
 **1. Banco de produção.** Crie um banco PostgreSQL separado do de desenvolvimento (por exemplo, um projeto novo no Neon). O Neon oferece duas URLs: a _pooled_ (host com `-pooler`), para a aplicação, e a direta, para migrações. Aplique as migrações e os dados a partir da sua máquina, informando a URL direta só na linha de comando:
 
@@ -321,20 +344,24 @@ No PowerShell, defina antes cada variável com `$env:DATABASE_URL="<url-direta>"
 
 **2. Variáveis no painel da Vercel** (_Settings → Environment Variables_):
 
-| Variável            | Valor                                                               |
-| ------------------- | ------------------------------------------------------------------- |
-| `DATABASE_URL`      | URL _pooled_ do banco de produção                                   |
-| `JWT_ACCESS_SECRET` | segredo novo, gerado com o comando da seção de configuração         |
-| `NODE_ENV`          | `production`                                                        |
-| `TRUST_PROXY`       | `1`                                                                 |
-| `CORS_ORIGINS`      | domínio público, ex.: `https://rotulai.vercel.app`                  |
-| `AI_PROVIDER`       | `none` (ou `anthropic` com `ANTHROPIC_API_KEY` para habilitar a IA) |
+| Variável            | Valor                                                                     |
+| ------------------- | ------------------------------------------------------------------------- |
+| `DATABASE_URL`      | URL _pooled_ do banco de produção                                         |
+| `JWT_ACCESS_SECRET` | segredo novo, gerado com o comando da seção de configuração               |
+| `CRON_SECRET`       | segredo aleatório com pelo menos 32 caracteres para autorizar Vercel Cron |
+| `NODE_ENV`          | `production`                                                              |
+| `TRUST_PROXY`       | `1`                                                                       |
+| `COOKIE_SECURE`     | `true`                                                                    |
+| `COOKIE_SAMESITE`   | `lax` (front-end e API no mesmo domínio)                                  |
+| `CORS_ORIGINS`      | domínio público, ex.: `https://rotulai.vercel.app`                        |
+| `AI_PROVIDER`       | `none` (ou `anthropic` com `ANTHROPIC_API_KEY` para habilitar a IA)       |
 
-**3. Importar o repositório** na Vercel mantendo o diretório raiz `./`. O painel detecta os dois serviços a partir do `vercel.json`.
+**3. Importar o repositório** na Vercel mantendo o diretório raiz `./`. `vercel.json` configura cada serviço e seus frameworks; confira no preview que os dois foram reconhecidos. A orientação explícita para selecionar o preset `Services` pertence ao modelo legado `experimentalServices`; use o preset somente se o fluxo atual da Vercel o solicitar.
 
 Particularidades da execução como função da Vercel:
 
-- A API roda como Vercel Function. A rotina de retenção roda quando uma instância inicia, e não a cada 24 horas garantidas; para uma execução diária fixa, use um [Cron Job](https://vercel.com/docs/cron-jobs).
+- A rotina diária usa [Vercel Cron](https://vercel.com/docs/cron-jobs), configurado para 05:17 UTC. O endpoint requer `CRON_SECRET`; sem ele retorna `503` e não apaga dados.
+- O pool PostgreSQL da API limita cada instância a cinco conexões; confira os limites do provedor e use a URL _pooled_ apropriada.
 - O rate limit fica em memória por instância, então os limites valem por instância e não globalmente.
 - A Vercel não serve arquivos com `express.static()`, então a interface do Swagger em `/api/docs` pode não carregar. A especificação em `/api/docs.json` continua disponível.
 
@@ -349,6 +376,7 @@ Particularidades da execução como função da Vercel:
 
 - Senhas com bcrypt (custo 12); política mínima de 8 caracteres com letras e números.
 - Access token JWT de 15 minutos mantido **apenas em memória** no navegador (nunca em `localStorage`).
+- A única preferência da interface salva no `localStorage` é o tema claro/escuro (`rotulai-theme`); tokens e dados de sessão não são armazenados ali.
 - Refresh token opaco de 256 bits em cookie `httpOnly`, com `path=/api/auth`, armazenado no banco somente como hash SHA-256, rotacionado a cada uso; reuso de um token antigo revoga toda a família de sessões.
 - Rotas de refresh e logout exigem o cabeçalho `X-Requested-With: Rotulai`, bloqueando requisições forjadas de outros sites (CSRF).
 - Autorização no servidor: toda consulta de dados privados filtra por `userId`. Recursos de outro usuário retornam 404, sem revelar sua existência. Rotas `/api/admin/*` exigem perfil `ADMIN`, consultado no banco a cada requisição.

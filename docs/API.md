@@ -8,6 +8,10 @@ Base: `/api`. Documentação interativa em `/api/docs` (Swagger UI) e especifica
 2. Envie `Authorization: Bearer <accessToken>` nas rotas privadas. O token expira em 15 minutos.
 3. Para renovar, chame `POST /auth/refresh` com o cookie e o cabeçalho `X-Requested-With: Rotulai`.
 
+## Rotina agendada
+
+`GET /cron/retention` é reservado à Vercel Cron e não usa o JWT de usuário. Requer `Authorization: Bearer <CRON_SECRET>`; sem segredo configurado, responde `503`, e com um segredo inválido, responde `401`. A rotina executa as regras de retenção documentadas abaixo e não é uma rota para uso pelo navegador.
+
 ## Formato de erro
 
 ### Perfis
