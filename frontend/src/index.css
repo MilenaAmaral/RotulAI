@@ -12,6 +12,7 @@
   --color-brand-accent: #3fa37a;
   --color-brand-soft: #ddf1e6;
   --color-brand-mark: #bfe6d2;
+  --color-surface: #ffffff;
   --color-mist: #f5f7f6;
   --color-stone: #8f9a96;
   --color-graphite: #1c2321;
@@ -30,6 +31,25 @@
 
   --shadow-soft: 0 1px 2px rgb(28 35 33 / 0.04), 0 4px 16px -4px rgb(28 35 33 / 0.08);
   --shadow-lift: 0 2px 4px rgb(28 35 33 / 0.05), 0 12px 32px -8px rgb(28 35 33 / 0.14);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-brand-soft: #27382f;
+  --color-brand-mark: #3d594a;
+  --color-surface: #1b1f24;
+  --color-mist: #121417;
+  --color-stone: #89938f;
+  --color-graphite: #f3f4f6;
+  --color-ink-soft: #a1a1aa;
+  --color-line: #30363d;
+  --color-danger: #fda29b;
+  --color-danger-soft: #3b2426;
+  --color-success: #75e0a7;
+  --color-success-soft: #1d352a;
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.12), 0 4px 16px -4px rgb(0 0 0 / 0.16);
+  --shadow-lift: 0 2px 4px rgb(0 0 0 / 0.16), 0 12px 32px -8px rgb(0 0 0 / 0.24);
 }
 
 @layer base {
@@ -93,7 +113,7 @@
   }
 
   .panel {
-    @apply rounded-[var(--radius-panel)] border border-line bg-white;
+    @apply rounded-[var(--radius-panel)] border border-line bg-surface;
     box-shadow: var(--shadow-soft);
   }
 
@@ -110,6 +130,40 @@
 
   .prose-ai li + li {
     margin-top: 0.25em;
+  }
+}
+
+@layer utilities {
+  [data-theme='dark'] .bg-white {
+    background-color: var(--color-surface);
+  }
+
+  [data-theme='dark'] .bg-white\/60 {
+    background-color: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  }
+
+  [data-theme='dark'] .bg-white\/70 {
+    background-color: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  }
+
+  [data-theme='dark'] .bg-white\/95 {
+    background-color: color-mix(in srgb, var(--color-surface) 95%, transparent);
+  }
+
+  [data-theme='dark'] .bg-graphite {
+    background-color: #1c2321;
+  }
+
+  [data-theme='dark'] .text-brand {
+    color: #8ddbb0;
+  }
+
+  [data-theme='dark'] .border-\[\#fecdca\] {
+    border-color: #6b3737;
+  }
+
+  [data-theme='dark'] .accent-\[\#252525\] {
+    accent-color: #a1a1aa;
   }
 }
 

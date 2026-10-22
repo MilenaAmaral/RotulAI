@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ThemeProvider } from '../../theme/ThemeProvider';
 import { LoginPage } from './LoginPage';
 
 const { login } = vi.hoisted(() => ({ login: vi.fn() }));
@@ -19,13 +20,15 @@ describe('LoginPage redirect', () => {
   async function submitLogin(state: { from: string }) {
     const user = userEvent.setup();
     render(
-      <MemoryRouter initialEntries={[{ pathname: '/entrar', state }]}>
-        <Routes>
-          <Route path="/entrar" element={<LoginPage />} />
-          <Route path="/comparar" element={<p>Comparação solicitada</p>} />
-          <Route path="/dashboard" element={<p>Dashboard</p>} />
-        </Routes>
-      </MemoryRouter>,
+      <ThemeProvider>
+        <MemoryRouter initialEntries={[{ pathname: '/entrar', state }]}>
+          <Routes>
+            <Route path="/entrar" element={<LoginPage />} />
+            <Route path="/comparar" element={<p>Comparação solicitada</p>} />
+            <Route path="/dashboard" element={<p>Dashboard</p>} />
+          </Routes>
+        </MemoryRouter>
+      </ThemeProvider>,
     );
 
     await user.type(screen.getByLabelText('E-mail'), 'pessoa@example.com');

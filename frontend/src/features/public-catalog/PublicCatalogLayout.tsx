@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router';
 import { Logo } from '../../components/ui/Logo';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold transition-colors ${
@@ -42,6 +43,7 @@ export function PublicCatalogLayout() {
             >
               Criar conta
             </Link>
+            <ThemeToggle />
           </nav>
         </div>
       </header>
