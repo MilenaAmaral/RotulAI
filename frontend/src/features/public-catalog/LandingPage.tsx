@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, FlaskConical, Search, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, Search } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { ErrorState } from '../../components/ui/States';
@@ -27,16 +27,15 @@ export function LandingPage() {
         canonicalPath="/"
       />
 
-      <section className="grid gap-8 py-10 sm:py-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(300px,0.9fr)] lg:items-center lg:gap-14 lg:py-20">
-        <div>
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1.5 text-sm font-semibold text-brand">
-            <Sparkles size={16} aria-hidden="true" />
+      <section className="grid gap-8 py-10 sm:py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-12 lg:py-20">
+        <div className="max-w-xl">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.14em] text-brand">
             Informação de rótulos, com clareza
           </p>
-          <h1 className="max-w-2xl text-4xl font-bold sm:text-5xl lg:text-[3.5rem]">
+          <h1 className="text-4xl font-bold sm:text-5xl lg:text-[3.5rem]">
             Entenda o que existe nos produtos que você consome.
           </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
+          <p className="mt-5 text-lg leading-relaxed text-ink-soft">
             Explore informações sobre ingredientes e composição de cosméticos em uma experiência de consulta simples e
             acessível.
           </p>
@@ -56,41 +55,13 @@ export function LandingPage() {
           </div>
         </div>
 
-        <div className="relative rounded-[24px] border border-line bg-white p-5 shadow-[var(--shadow-lift)] sm:p-7">
-          <div className="absolute -top-3 right-6 rounded-full bg-brand-mark px-3 py-1 text-xs font-bold text-brand">
-            Catálogo aberto
-          </div>
-          <div className="flex items-start gap-4 border-b border-line pb-5">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-brand-soft text-brand">
-              <BookOpen size={23} aria-hidden="true" />
-            </span>
-            <div>
-              <h2 className="font-display text-xl font-bold">Conheça antes de escolher</h2>
-              <p className="mt-1 text-sm text-ink-soft">
-                Consulte produtos e listas de ingredientes disponíveis sem precisar entrar.
-              </p>
-            </div>
-          </div>
-          <ul className="mt-5 flex flex-col gap-4">
-            <li className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-mist text-brand">
-                <Search size={18} aria-hidden="true" />
-              </span>
-              <span className="text-sm font-medium">Busque por nome, marca ou categoria</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-mist text-brand">
-                <FlaskConical size={18} aria-hidden="true" />
-              </span>
-              <span className="text-sm font-medium">Confira ingredientes e fontes disponíveis</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-mist text-brand">
-                <Sparkles size={18} aria-hidden="true" />
-              </span>
-              <span className="text-sm font-medium">Crie uma conta para acessar recursos pessoais</span>
-            </li>
-          </ul>
+        <div className="overflow-hidden rounded-[var(--radius-panel)] bg-brand-soft">
+          <img
+            src="/capa_rotuloai.jpg"
+            alt="Três pessoas cuidando da pele em um ambiente claro e acolhedor"
+            className="aspect-[4/3] w-full object-cover sm:aspect-[16/10] lg:aspect-[4/3]"
+            fetchPriority="high"
+          />
         </div>
       </section>
 

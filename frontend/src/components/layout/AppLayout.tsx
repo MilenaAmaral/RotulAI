@@ -17,6 +17,7 @@ import { Link, NavLink, Outlet } from 'react-router';
 import { useAuth } from '../../auth/auth-context';
 import { cn } from '../ui/cn';
 import { Logo } from '../ui/Logo';
+import { ThemeToggle } from '../ui/ThemeToggle';
 
 const navItems = [
   { to: '/dashboard', label: 'Início', icon: LayoutGrid, end: true },
@@ -104,9 +105,12 @@ export function AppLayout() {
 
       {/* Barra lateral (desktop) */}
       <aside className="sticky top-0 hidden h-dvh flex-col self-start border-r border-line bg-white px-4 py-6 lg:flex">
-        <Link to="/dashboard" className="mb-8 px-3">
-          <Logo />
-        </Link>
+        <div className="mb-8 flex items-center justify-between px-3">
+          <Link to="/dashboard">
+            <Logo />
+          </Link>
+          <ThemeToggle />
+        </div>
         <nav aria-label="Principal" className="flex-1">
           <Navigation />
         </nav>
@@ -118,16 +122,19 @@ export function AppLayout() {
         <Link to="/dashboard" onClick={() => setMenuOpen(false)}>
           <Logo />
         </Link>
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-expanded={menuOpen}
-          aria-controls="menu-movel"
-          className="flex size-10 items-center justify-center rounded-[var(--radius-control)] text-graphite hover:bg-mist"
-        >
-          {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
-          <span className="sr-only">{menuOpen ? 'Fechar menu' : 'Abrir menu'}</span>
-        </button>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-expanded={menuOpen}
+            aria-controls="menu-movel"
+            className="flex size-10 items-center justify-center rounded-[var(--radius-control)] text-graphite hover:bg-mist"
+          >
+            {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+            <span className="sr-only">{menuOpen ? 'Fechar menu' : 'Abrir menu'}</span>
+          </button>
+        </div>
       </header>
       {menuOpen && (
         <div

@@ -38,6 +38,9 @@ describe('LandingPage', () => {
     );
 
     expect(screen.getByRole('heading', { name: 'Entenda o que existe nos produtos que você consome.' })).toBeVisible();
+    expect(
+      screen.getByRole('img', { name: 'Três pessoas cuidando da pele em um ambiente claro e acolhedor' }),
+    ).toHaveAttribute('src', '/capa_rotuloai.jpg');
     expect(screen.getByText('Produto de teste')).toBeVisible();
     expect(screen.getByRole('link', { name: 'Ver informações públicas' })).toHaveAttribute(
       'href',

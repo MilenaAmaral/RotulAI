@@ -8,6 +8,7 @@ import { App } from './App';
 import { AuthProvider } from './auth/AuthProvider';
 import { ToastProvider } from './components/ui/ToastProvider';
 import { queryClient } from './lib/query-client';
+import { ThemeProvider } from './theme/ThemeProvider';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Elemento #root não encontrado.');
@@ -16,9 +17,11 @@ createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ToastProvider>
-          <App />
-        </ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <App />
+          </ToastProvider>
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,

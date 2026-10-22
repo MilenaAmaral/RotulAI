@@ -3,7 +3,7 @@ import { env } from '../config/env.js';
 import { PrismaClient } from '../generated/prisma/client.js';
 
 export function createPrismaClient(databaseUrl: string = env.DATABASE_URL): PrismaClient {
-  const adapter = new PrismaPg({ connectionString: databaseUrl });
+  const adapter = new PrismaPg({ connectionString: databaseUrl, max: 5 });
   return new PrismaClient({ adapter });
 }
 
