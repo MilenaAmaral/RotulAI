@@ -10,6 +10,18 @@ import { AuthLayout } from './AuthLayout';
 import type { LoginForm } from './schemas';
 import { loginFormSchema } from './schemas';
 
+function getSafeRedirectPath(value: unknown): string {
+  if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) return '/dashboard';
+
+  try {
+    const destination = new URL(value, window.location.origin);
+    if (destination.origin !== window.location.origin) return '/dashboard';
+    return `${destination.pathname}${destination.search}${destination.hash}`;
+  } catch {
+    return '/dashboard';
+  }
+}
+
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -21,7 +33,7 @@ export function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({ resolver: zodResolver(loginFormSchema) });
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/';
+  const from = getSafeRedirectPath((location.state as { from?: unknown } | null)?.from);
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);

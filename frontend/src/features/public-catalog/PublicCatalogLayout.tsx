@@ -17,21 +17,30 @@ export function PublicCatalogLayout() {
       </a>
       <header className="border-b border-line bg-white">
         <div className="mx-auto flex min-h-16 max-w-[1120px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8">
-          <Link to="/catalogo" aria-label="Rotulai — catálogo público">
+          <Link to="/" aria-label="Rotulai — início">
             <Logo />
           </Link>
           <nav aria-label="Catálogo público" className="flex flex-wrap items-center gap-1">
-            <NavLink to="/catalogo" end className={linkClass}>
-              Produtos
+            <NavLink to="/" end className={linkClass}>
+              Início
+            </NavLink>
+            <NavLink to="/catalogo" className={linkClass}>
+              Explorar catálogo
             </NavLink>
             <NavLink to="/catalogo/ingredientes" className={linkClass}>
               Ingredientes
             </NavLink>
             <Link
               to="/entrar"
-              className="ml-1 rounded-[var(--radius-control)] bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand/90"
+              className="ml-1 rounded-[var(--radius-control)] px-3 py-2 text-sm font-semibold text-brand hover:bg-brand-soft"
             >
-              Acessar minha conta
+              Entrar
+            </Link>
+            <Link
+              to="/cadastro"
+              className="rounded-[var(--radius-control)] bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand/90"
+            >
+              Criar conta
             </Link>
           </nav>
         </div>

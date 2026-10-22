@@ -19,7 +19,7 @@ import { cn } from '../ui/cn';
 import { Logo } from '../ui/Logo';
 
 const navItems = [
-  { to: '/', label: 'Início', icon: LayoutGrid, end: true },
+  { to: '/dashboard', label: 'Início', icon: LayoutGrid, end: true },
   { to: '/catalogo', label: 'Catálogo público', icon: BookOpen },
   { to: '/favoritos', label: 'Favoritos', icon: Heart },
   { to: '/catalogo/ingredientes', label: 'Ingredientes', icon: FlaskConical },
@@ -104,7 +104,7 @@ export function AppLayout() {
 
       {/* Barra lateral (desktop) */}
       <aside className="sticky top-0 hidden h-dvh flex-col self-start border-r border-line bg-white px-4 py-6 lg:flex">
-        <Link to="/" className="mb-8 px-3">
+        <Link to="/dashboard" className="mb-8 px-3">
           <Logo />
         </Link>
         <nav aria-label="Principal" className="flex-1">
@@ -115,7 +115,7 @@ export function AppLayout() {
 
       {/* Barra superior (tablet e celular) */}
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-white/95 px-4 backdrop-blur lg:hidden">
-        <Link to="/" onClick={() => setMenuOpen(false)}>
+        <Link to="/dashboard" onClick={() => setMenuOpen(false)}>
           <Logo />
         </Link>
         <button
