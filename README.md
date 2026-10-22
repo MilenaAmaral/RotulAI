@@ -325,10 +325,10 @@ npm start -w backend # executa a API compilada
 
 O `vercel.json` da raiz usa [Vercel Services](https://vercel.com/docs/services) (beta): o front-end responde em `/` e a API em `/api`, no mesmo domínio. Assim o cookie de sessão funciona com `COOKIE_SAMESITE=lax` e `VITE_API_URL` fica vazio. Não há chamadas entre servidores, então nenhum _binding_ é necessário. Consulte [docs/deploy-vercel.md](docs/deploy-vercel.md) para a preparação do banco, variáveis, migrações e Cron.
 
-| Serviço    | Pasta      | Caminho público | Build                                          |
-| ---------- | ---------- | --------------- | ---------------------------------------------- |
-| `frontend` | `frontend` | `/`             | `npm run build` → `dist` (com fallback SPA)    |
-| `backend`  | `backend`  | `/api`          | `npm run db:generate`; entrada `src/server.ts` |
+| Serviço    | Pasta      | Caminho público | Build                                         |
+| ---------- | ---------- | --------------- | --------------------------------------------- |
+| `frontend` | `frontend` | `/`             | `npm run build` → `dist` (com fallback SPA)   |
+| `backend`  | `backend`  | `/api`          | `npm run db:generate`; entrada `src/index.ts` |
 
 **1. Banco de produção.** Crie um banco PostgreSQL separado do de desenvolvimento (por exemplo, um projeto novo no Neon). O Neon oferece duas URLs: a _pooled_ (host com `-pooler`), para a aplicação, e a direta, para migrações. Aplique as migrações e os dados a partir da sua máquina, informando a URL direta só na linha de comando:
 
@@ -344,16 +344,19 @@ No PowerShell, defina antes cada variável com `$env:DATABASE_URL="<url-direta>"
 
 **2. Variáveis no painel da Vercel** (_Settings → Environment Variables_):
 
-| Variável            | Valor                                                               |
-| ------------------- | ------------------------------------------------------------------- |
-| `DATABASE_URL`      | URL _pooled_ do banco de produção                                   |
-| `JWT_ACCESS_SECRET` | segredo novo, gerado com o comando da seção de configuração         |
-| `NODE_ENV`          | `production`                                                        |
-| `TRUST_PROXY`       | `1`                                                                 |
-| `CORS_ORIGINS`      | domínio público, ex.: `https://rotulai.vercel.app`                  |
-| `AI_PROVIDER`       | `none` (ou `anthropic` com `ANTHROPIC_API_KEY` para habilitar a IA) |
+| Variável            | Valor                                                                     |
+| ------------------- | ------------------------------------------------------------------------- |
+| `DATABASE_URL`      | URL _pooled_ do banco de produção                                         |
+| `JWT_ACCESS_SECRET` | segredo novo, gerado com o comando da seção de configuração               |
+| `CRON_SECRET`       | segredo aleatório com pelo menos 32 caracteres para autorizar Vercel Cron |
+| `NODE_ENV`          | `production`                                                              |
+| `TRUST_PROXY`       | `1`                                                                       |
+| `COOKIE_SECURE`     | `true`                                                                    |
+| `COOKIE_SAMESITE`   | `lax` (front-end e API no mesmo domínio)                                  |
+| `CORS_ORIGINS`      | domínio público, ex.: `https://rotulai.vercel.app`                        |
+| `AI_PROVIDER`       | `none` (ou `anthropic` com `ANTHROPIC_API_KEY` para habilitar a IA)       |
 
-**3. Importar o repositório** na Vercel mantendo o diretório raiz `./`. O painel detecta os dois serviços a partir do `vercel.json`.
+**3. Importar o repositório** na Vercel mantendo o diretório raiz `./`. `vercel.json` configura cada serviço e seus frameworks; confira no preview que os dois foram reconhecidos. A orientação explícita para selecionar o preset `Services` pertence ao modelo legado `experimentalServices`; use o preset somente se o fluxo atual da Vercel o solicitar.
 
 Particularidades da execução como função da Vercel:
 
