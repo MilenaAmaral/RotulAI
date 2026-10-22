@@ -31,7 +31,7 @@ export async function purgeExpiredHistory(retentionDays: number = env.HISTORY_RE
   };
 }
 
-/** Executa a limpeza na inicialização e a cada 24 horas. */
+/** Executa a limpeza na inicialização e a cada 24 horas em servidores persistentes. */
 export function scheduleRetentionJob(): NodeJS.Timeout {
   const run = async () => {
     try {

@@ -6,7 +6,9 @@ Este guia prepara o front-end e a API no mesmo domínio. Nenhum banco, projeto V
 
 O [`vercel.json`](../vercel.json) define dois Vercel Services: `frontend` (Vite) serve as páginas e `backend` (Express) atende `/api`. Os rewrites mantêm a API e o front-end na mesma origem, permitindo `COOKIE_SAMESITE=lax` e `VITE_API_URL` vazio. A configuração usa Vercel Services, atualmente documentado pela Vercel como beta; confirme disponibilidade e comportamento no plano e na conta antes de depender dela em produção.
 
-O backend exporta a aplicação Express para execução como função e não inicia `app.listen()` nem um timer persistente na Vercel. Em execução local ou em um servidor persistente, o servidor continua ouvindo a porta configurada e mantém a rotina de retenção existente.
+O entrypoint `backend/src/index.ts` exporta a aplicação Express como default para o runtime da Vercel. O bootstrap `backend/src/server.ts` é exclusivo para desenvolvimento e servidores persistentes: ele inicia `app.listen()`, registra o encerramento gracioso e agenda a rotina de retenção local. A Vercel não importa esse bootstrap e não depende de timers.
+
+A configuração atual usa a chave `services` de `vercel.json`, com `framework` definido por serviço. A documentação atual descreve essa configuração e os rewrites como a definição dos Services; a exigência explícita de selecionar o preset `Services` aparece na documentação do modelo legado `experimentalServices`, não como requisito adicional do modelo `services`. Se o assistente de configuração da Vercel oferecer o preset `Services`, selecione-o; não defina o projeto inteiro como Express ou Vite, pois são frameworks distintos por serviço. Confirme no preview que a Vercel reconheceu ambos os serviços.
 
 ## 1. Criar e preparar o PostgreSQL
 
@@ -59,9 +61,9 @@ Os comandos definidos atualmente são:
 | Serviço    | Diretório  | Build                 | Entrada                                    |
 | ---------- | ---------- | --------------------- | ------------------------------------------ |
 | `frontend` | `frontend` | `npm run build`       | saída estática `dist`, com fallback de SPA |
-| `backend`  | `backend`  | `npm run db:generate` | `src/server.ts`                            |
+| `backend`  | `backend`  | `npm run db:generate` | `src/index.ts` (app Express exportado)     |
 
-O build gera o Prisma Client, mas não aplica migrações e não executa seeds. Migrações e dados iniciais permanecem operações manuais e separadas.
+O build gera o Prisma Client, mas não aplica migrações e não executa seeds. Migrações e dados iniciais permanecem operações manuais e separadas. O backend usa Prisma 7 com `@prisma/adapter-pg`, PostgreSQL e pool limitado a cinco conexões por instância. As migrações existentes são PostgreSQL e devem ser aplicadas com `npm run db:deploy -w backend` usando uma URL de migração adequada; nunca rode `db:reset` em produção.
 
 ## 4. Retenção agendada
 
