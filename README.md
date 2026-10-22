@@ -1,8 +1,8 @@
 # Rotulai
 
-Plataforma full stack para organizar cosméticos, entender ingredientes de rótulos e comparar produtos, com um assistente de inteligência artificial integrado pelo servidor.
+Plataforma full stack para explorar cosméticos, consultar ingredientes de rótulos e comparar produtos, com um assistente de inteligência artificial integrado pelo servidor.
 
-![Dashboard do Rotulai](docs/screenshots/dashboard.png)
+![Capa do RotulAI](frontend/public/capa_rotuloai.jpg)
 
 > **Aviso:** o Rotulai fornece informações educacionais. Não diagnostica doenças, não prescreve tratamentos, não garante ausência de alergias e não substitui a orientação de um dermatologista.
 
@@ -10,6 +10,7 @@ Plataforma full stack para organizar cosméticos, entender ingredientes de rótu
 
 - [Problema](#problema)
 - [Funcionalidades](#funcionalidades)
+- [Rotas da aplicação](#rotas-da-aplicação)
 - [Tecnologias](#tecnologias)
 - [Arquitetura](#arquitetura)
 - [Estrutura de pastas](#estrutura-de-pastas)
@@ -38,7 +39,7 @@ Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas 
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Autenticação**           | Cadastro, login, sessão persistente com rotação de refresh token, logout e exclusão de conta com todos os dados.                                                                                                                                                           |
 | **Página inicial pública** | A rota `/` apresenta o RotulAI e uma amostra do catálogo sem exigir login; o dashboard autenticado está em `/dashboard`.                                                                                                                                                   |
-| **Tema**                   | Alternância entre modos claro e escuro, respeitando a preferência do sistema na primeira visita e salvando a escolha no navegador.                                                                                                                                         |
+| **Tema**                   | Alternância entre modos claro e escuro em páginas públicas, autenticadas e de acesso; na primeira visita respeita o sistema e salva a escolha no navegador.                                                                                                                |
 | **Dashboard**              | Em `/dashboard`, apresenta saudação, indicadores reais (favoritos, ingredientes consultados, comparações, conversas), atividade recente e acessos rápidos.                                                                                                                 |
 | **Catálogo público**       | Páginas sem login em `/catalogo` e `/catalogo/ingredientes`, com busca tolerante a erros de digitação e por sinônimos ("filtro solar" encontra protetores), sugestões, filtros, fontes e metadados por página.                                                             |
 | **Favoritos**              | Pessoas logadas salvam produtos do catálogo público. Os favoritos alimentam o comparador e o contexto do assistente.                                                                                                                                                       |
@@ -48,15 +49,28 @@ Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas 
 | **Assistente Rotulai**     | Chat com histórico, sugestões iniciais, contexto opcional de até 2 favoritos, limite de caracteres, indicador de digitação e mensagens claras de indisponibilidade.                                                                                                        |
 | **Histórico**              | Consultas de ingredientes, comparações e conversas persistidas no PostgreSQL, com exclusão individual, limpeza por tipo e política de retenção visível ao usuário.                                                                                                         |
 
+### Rotas da aplicação
+
+As páginas públicas não exigem conta. As áreas pessoais redirecionam visitantes para o login e retornam à rota solicitada após a autenticação.
+
+| Acesso            | Rotas                                                                                                                                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Público           | `/` (página inicial), `/catalogo`, `/catalogo/produtos/:slug`, `/catalogo/ingredientes`, `/catalogo/ingredientes/:id`                                                                                                 |
+| Autenticação      | `/entrar`, `/cadastro`                                                                                                                                                                                                |
+| Conta autenticada | `/dashboard`, `/favoritos`, `/produtos`, `/produtos/:id`, `/ingredientes`, `/ingredientes/:id`, `/ingredientes/consultas/:id`, `/comparar`, `/comparar/:id`, `/assistente`, `/assistente/:id`, `/historico`, `/conta` |
+| Administrador     | `/admin` (perfil `ADMIN`)                                                                                                                                                                                             |
+
+`/produtos` é mantida como rota legada da área de favoritos. A rota pública de catálogo `/catalogo/ingredientes` é diferente da área autenticada `/ingredientes`.
+
 ### Telas
 
-| Comparação                                     | Detalhe do produto                       | Celular                                 |
-| ---------------------------------------------- | ---------------------------------------- | --------------------------------------- |
-| ![Comparação](docs/screenshots/comparacao.png) | ![Produto](docs/screenshots/produto.png) | ![Celular](docs/screenshots/mobile.png) |
+| Dashboard                                    | Comparação                                     | Detalhe do produto                       | Celular                                 |
+| -------------------------------------------- | ---------------------------------------------- | ---------------------------------------- | --------------------------------------- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Comparação](docs/screenshots/comparacao.png) | ![Produto](docs/screenshots/produto.png) | ![Celular](docs/screenshots/mobile.png) |
 
 ## Tecnologias
 
-**Front-end:** React 19, TypeScript, Vite, Tailwind CSS 4, React Router, TanStack Query, React Hook Form, Zod, Lucide React.
+**Front-end:** React 19, TypeScript, Vite, Tailwind CSS 4 com tokens CSS para os temas claro/escuro, React Router, TanStack Query, React Hook Form, Zod, Lucide React.
 
 **Back-end:** Node.js, TypeScript, Express 5, Zod, Prisma ORM 7 (adapter `pg`), PostgreSQL 16 (com `pg_trgm` e `unaccent` para a busca), Swagger UI / OpenAPI 3.1, Helmet, express-rate-limit, bcrypt, JWT, Pino.
 
@@ -82,6 +96,7 @@ Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas 
 ```
 
 - O front-end só conversa com a API. A chave de IA existe apenas no servidor.
+- `ThemeProvider` compartilha a preferência de tema da interface; a escolha fica no `localStorage` do navegador e não contém dados de autenticação.
 - Regras de negócio, validações e acesso a dados ficam no back-end, organizados por módulo (`routes` → `service` → Prisma).
 - A comparação de produtos é uma função pura (`compare-products.ts`), testável sem banco.
 - A IA passa por `AiService`, que aplica tempo limite, cota diária, validação da resposta e conversão de erros, independentemente do provedor.
@@ -110,7 +125,10 @@ Rotulai/
 │   │   ├── components/      # layout e componentes reutilizáveis
 │   │   ├── features/        # páginas por domínio
 │   │   ├── lib/             # cliente HTTP, queries, formatação
-│   │   └── types/           # contratos da API
+│   │   ├── theme/           # estado global e persistência do tema
+│   │   ├── types/           # contratos da API
+│   │   └── index.css        # tokens visuais e estilos globais
+│   ├── public/              # favicon e capa estática do site
 │   └── tests/
 ├── docs/                    # arquitetura, API e capturas de tela
 ├── docker/                  # script de inicialização do PostgreSQL
@@ -150,6 +168,7 @@ cp frontend/.env.example frontend/.env
 ```
 
 No Windows (PowerShell): `Copy-Item backend/.env.example backend/.env`.
+Copie também `frontend/.env.example` para `frontend/.env` se for configurar uma URL de API diferente.
 
 Edite `backend/.env` e defina um `JWT_ACCESS_SECRET` aleatório:
 
@@ -264,7 +283,7 @@ O back-end cobre:
 - falhas da integração com IA (não configurada, indisponível, tempo limite, resposta inválida, cota) usando um provedor de teste;
 - retenção de dados, CORS, cabeçalhos de segurança e tratamento central de erros (inclusive conflitos do banco).
 
-O front-end testa a visualização da comparação, o painel admin de produtos (edição sem quebrar nomes como "1,2-Hexanediol"), a leitura dos campos do admin, a renderização segura do texto da IA, os metadados das páginas públicas e o parser de ingredientes.
+O front-end testa a visualização da comparação, o painel admin de produtos (edição sem quebrar nomes como "1,2-Hexanediol"), a leitura dos campos do admin, a renderização segura do texto da IA, os metadados das páginas públicas, a landing page, os redirecionamentos de login, a persistência do tema e o parser de ingredientes.
 
 ## API
 
@@ -278,6 +297,7 @@ Documentação interativa (Swagger UI): `http://localhost:3333/api/docs` · espe
 | GET                 | `/api/dashboard`                                            | Indicadores e atividades                                          |
 | GET                 | `/api/catalog/products` · `/api/catalog/products/:slug`     | Catálogo público, busca/filtro e detalhe (sem login)              |
 | GET                 | `/api/catalog/ingredients` · `/api/catalog/ingredients/:id` | Ingredientes curados públicos, busca/filtro e detalhe (sem login) |
+| GET                 | `/api/catalog/ingredients/functions`                        | Funções disponíveis para filtro público de ingredientes           |
 | GET / PUT / DELETE  | `/api/favorites` · `/api/favorites/:productId`              | Listar / salvar / remover favoritos                               |
 | GET                 | `/api/products` · `/api/products/:id`                       | Produtos pessoais legados (somente leitura para `FREE`)           |
 | GET                 | `/api/ingredients` · `/api/ingredients/:id`                 | Base de ingredientes                                              |
@@ -350,6 +370,7 @@ Particularidades da execução como função da Vercel:
 
 - Senhas com bcrypt (custo 12); política mínima de 8 caracteres com letras e números.
 - Access token JWT de 15 minutos mantido **apenas em memória** no navegador (nunca em `localStorage`).
+- A única preferência da interface salva no `localStorage` é o tema claro/escuro (`rotulai-theme`); tokens e dados de sessão não são armazenados ali.
 - Refresh token opaco de 256 bits em cookie `httpOnly`, com `path=/api/auth`, armazenado no banco somente como hash SHA-256, rotacionado a cada uso; reuso de um token antigo revoga toda a família de sessões.
 - Rotas de refresh e logout exigem o cabeçalho `X-Requested-With: Rotulai`, bloqueando requisições forjadas de outros sites (CSRF).
 - Autorização no servidor: toda consulta de dados privados filtra por `userId`. Recursos de outro usuário retornam 404, sem revelar sua existência. Rotas `/api/admin/*` exigem perfil `ADMIN`, consultado no banco a cada requisição.
