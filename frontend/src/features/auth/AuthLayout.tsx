@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import { Logo } from '../../components/ui/Logo';
 
 /** Rótulo ilustrativo: mostra a ideia do produto (ler o rótulo com um marca-texto). */
@@ -32,7 +33,10 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
   return (
     <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <main className="flex flex-col bg-white px-6 py-8 sm:px-12">
-        <Logo animated className="text-[1.6rem]" />
+        <div className="flex items-center justify-between">
+          <Logo animated className="text-[1.6rem]" />
+          <ThemeToggle />
+        </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
           <h1 className="text-[2rem] font-semibold">{title}</h1>
           <p className="mt-2 mb-8 text-ink-soft">{subtitle}</p>
