@@ -27,8 +27,19 @@ export function LandingPage() {
         canonicalPath="/"
       />
 
-      <section className="grid gap-8 py-10 sm:py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-12 lg:py-20">
-        <div className="max-w-xl">
+      <section className="-mt-3 pb-6 sm:-mt-4 sm:pb-10 lg:pb-12">
+        <div className="overflow-hidden rounded-[var(--radius-panel)] bg-brand-soft">
+          <img
+            src="/capa_rotuloai.jpg"
+            alt="Três pessoas cuidando da pele em um ambiente claro e acolhedor"
+            width={1584}
+            height={672}
+            className="aspect-[1584/672] h-auto w-full object-cover"
+            fetchPriority="high"
+          />
+        </div>
+
+        <div className="mt-8 max-w-3xl sm:mt-10">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.14em] text-brand">
             Informação de rótulos, com clareza
           </p>
@@ -53,17 +64,6 @@ export function LandingPage() {
               Criar minha conta
             </Link>
           </div>
-        </div>
-
-        <div className="overflow-hidden rounded-[var(--radius-panel)] bg-brand-soft">
-          <img
-            src="/capa_rotuloai.jpg"
-            alt="Três pessoas cuidando da pele em um ambiente claro e acolhedor"
-            width={1584}
-            height={672}
-            className="aspect-[1584/672] h-auto w-full object-cover"
-            fetchPriority="high"
-          />
         </div>
       </section>
 
