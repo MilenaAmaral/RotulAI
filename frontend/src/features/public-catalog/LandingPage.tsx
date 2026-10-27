@@ -59,7 +59,9 @@ export function LandingPage() {
           <img
             src="/capa_rotuloai.jpg"
             alt="Três pessoas cuidando da pele em um ambiente claro e acolhedor"
-            className="aspect-[4/3] w-full object-cover sm:aspect-[16/10] lg:aspect-[4/3]"
+            width={1584}
+            height={672}
+            className="aspect-[1584/672] h-auto w-full object-cover"
             fetchPriority="high"
           />
         </div>
