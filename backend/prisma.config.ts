@@ -7,8 +7,7 @@ export default defineConfig({
     path: 'prisma/migrations',
     seed: 'tsx prisma/seed.ts',
   },
-  // `prisma generate` não precisa de conexão; migrate/seed exigem DATABASE_URL definida no .env.
   datasource: {
-    url: process.env.DATABASE_URL ?? '',
+    url: process.env.DIRECT_URL ?? process.env.DATABASE_URL ?? '',
   },
 });
