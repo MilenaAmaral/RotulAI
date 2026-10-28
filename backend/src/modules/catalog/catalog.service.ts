@@ -4,7 +4,7 @@ import { notFound } from '../../lib/errors.js';
 import { buildPage } from '../../lib/pagination.js';
 import { prisma } from '../../lib/prisma.js';
 import { normalizeIngredientName } from '../ingredients/ingredient-names.js';
-import { containsSearchPhrase, normalizeSearchText, searchTokens } from './search-normalization.js';
+import { expandSearchQuery } from './search-normalization.js';
 import type { PublicIngredientListQuery, PublicProductListQuery } from './catalog.schemas.js';
 
 interface CatalogProductSearchRow {
@@ -36,11 +36,13 @@ function categoryArray(values: string[]): Prisma.Sql {
 function buildCatalogSearchCte(params: {
   query: string;
   terms: string[];
+  keywords: string[];
   phrases: string[];
   categories: string[];
   category?: string;
 }): Prisma.Sql {
   const terms = textArray(params.terms);
+  const keywords = textArray(params.keywords);
   const phrases = textArray(params.phrases);
   const categories = categoryArray(params.categories);
   const categoryFilter = params.category ?? null;
@@ -49,6 +51,7 @@ function buildCatalogSearchCte(params: {
       SELECT
         ${params.query}::text AS query,
         ${terms} AS terms,
+        ${keywords} AS keywords,
         ${phrases} AS phrases,
         ${categories} AS synonym_categories,
         ${categoryFilter}::"ProductCategory" AS category_filter
@@ -122,7 +125,7 @@ function buildCatalogSearchCte(params: {
                 ingredient."searchTerms" && input.phrases
                 OR EXISTS (
                   SELECT 1
-                  FROM unnest(input.terms) AS search_term(term)
+                  FROM unnest(input.keywords) AS search_term(term)
                   WHERE public.rotulai_unaccent(lower(ingredient."name")) %> search_term.term
                 )
               )
@@ -140,28 +143,7 @@ function buildSearchInput(
     category: string | null;
   }>,
 ) {
-  const normalizedQuery = normalizeSearchText(query.q ?? '');
-  const expandedPhrases = new Set([normalizedQuery]);
-  const categories = new Set<string>();
-  const expandedTerms = new Set(searchTokens(normalizedQuery));
-
-  for (const synonym of synonyms) {
-    if (!containsSearchPhrase(normalizedQuery, synonym.normalizedPhrase)) continue;
-    if (synonym.category) categories.add(synonym.category);
-    for (const expansion of synonym.expansions) {
-      const normalizedExpansion = normalizeSearchText(expansion);
-      expandedPhrases.add(normalizedExpansion);
-      for (const token of searchTokens(normalizedExpansion)) expandedTerms.add(token);
-    }
-  }
-
-  return {
-    query: normalizedQuery,
-    phrases: [...expandedPhrases].filter(Boolean),
-    terms: [...expandedTerms],
-    categories: [...categories],
-    category: query.category,
-  };
+  return { ...expandSearchQuery(query.q ?? '', synonyms), category: query.category };
 }
 
 async function fetchSearchRows(
@@ -201,7 +183,7 @@ export async function listPublicProducts(query: PublicProductListQuery) {
   const cte = buildCatalogSearchCte(search);
 
   const result = await prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SET LOCAL pg_trgm.word_similarity_threshold = '0.32'`;
+    await tx.$executeRaw`SET LOCAL pg_trgm.word_similarity_threshold = '0.5'`;
     const [summary] = await tx.$queryRaw<CatalogSearchSummary[]>(Prisma.sql`
       ${cte}
       SELECT COUNT(*)::int AS total, COALESCE(BOOL_OR("exactMatch"), false) AS "hasExactMatch"
