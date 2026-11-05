@@ -192,7 +192,7 @@ export function buildOpenApiDocument() {
             { name: 'category', in: 'query', schema: ref('ProductCategory') },
           ],
           responses: {
-            200: json('Lista paginada de produtos públicos com sugestões quando não há correspondência exata'),
+            200: json('Lista paginada de produtos públicos com sugestões e tipo related/correction/null'),
             400: errors[400],
           },
         },

@@ -35,6 +35,7 @@ function categoryArray(values: string[]): Prisma.Sql {
 
 function buildCatalogSearchCte(params: {
   query: string;
+  hasQuery: boolean;
   terms: string[];
   keywords: string[];
   phrases: string[];
@@ -50,11 +51,19 @@ function buildCatalogSearchCte(params: {
     WITH input AS (
       SELECT
         ${params.query}::text AS query,
+        ${params.hasQuery}::boolean AS has_query,
         ${terms} AS terms,
         ${keywords} AS keywords,
         ${phrases} AS phrases,
         ${categories} AS synonym_categories,
         ${categoryFilter}::"ProductCategory" AS category_filter
+    ),
+    product_text AS (
+      SELECT
+        product.*,
+        regexp_replace(trim(public.rotulai_unaccent(lower(product."name"))), '[^[:alnum:]]+', ' ', 'g') AS normalized_name,
+        regexp_replace(trim(public.rotulai_unaccent(lower(product."brand"))), '[^[:alnum:]]+', ' ', 'g') AS normalized_brand
+      FROM "CatalogProduct" product
     ),
     candidates AS (
       SELECT
@@ -69,10 +78,11 @@ function buildCatalogSearchCte(params: {
           WHERE product_ingredient."catalogProductId" = product."id"
         ) AS "ingredientCount",
         (
-          input.query <> ''
+          input.has_query
+          AND input.query <> ''
           AND (
-            public.rotulai_unaccent(lower(product."name")) = input.query
-            OR public.rotulai_unaccent(lower(product."brand")) = input.query
+            product.normalized_name = input.query
+            OR product.normalized_brand = input.query
           )
         ) AS "exactMatch",
         (product."category" = ANY(input.synonym_categories)) AS "categoryMatch",
@@ -81,17 +91,28 @@ function buildCatalogSearchCte(params: {
           FROM "CatalogProductIngredient" product_ingredient
           JOIN "Ingredient" ingredient ON ingredient."id" = product_ingredient."ingredientId"
           WHERE product_ingredient."catalogProductId" = product."id"
-            AND ingredient."searchTerms" && input.phrases
+            AND (
+              ingredient."searchTerms" && input.phrases
+              OR EXISTS (
+                SELECT 1
+                FROM unnest(input.terms) AS search_term(term)
+                WHERE strpos(
+                  ' ' || regexp_replace(trim(public.rotulai_unaccent(lower(ingredient."name"))), '[^[:alnum:]]+', ' ', 'g') || ' ',
+                  ' ' || search_term.term || ' '
+                ) > 0
+              )
+            )
         ) AS "ingredientMatch",
         GREATEST(
-          similarity(public.rotulai_unaccent(lower(product."name")), input.query),
-          similarity(public.rotulai_unaccent(lower(product."brand")), input.query),
           COALESCE((
-            SELECT MAX(GREATEST(
-              word_similarity(search_term.term, public.rotulai_unaccent(lower(product."name"))),
-              word_similarity(search_term.term, public.rotulai_unaccent(lower(product."brand")))
-            ))
-            FROM unnest(input.terms) AS search_term(term)
+            SELECT MAX(similarity(search_term.term, product_word.word))
+            FROM unnest(input.keywords) AS search_term(term)
+            CROSS JOIN LATERAL (
+              SELECT word FROM regexp_split_to_table(product.normalized_name, ' ') AS name_word(word)
+              UNION ALL
+              SELECT word FROM regexp_split_to_table(product.normalized_brand, ' ') AS brand_word(word)
+            ) AS product_word
+            WHERE char_length(search_term.term) >= 5
           ), 0),
           CASE WHEN product."category" = ANY(input.synonym_categories) THEN 0.65 ELSE 0 END,
           CASE WHEN EXISTS (
@@ -102,19 +123,28 @@ function buildCatalogSearchCte(params: {
               AND ingredient."searchTerms" && input.phrases
           ) THEN 0.7 ELSE 0 END
         )::double precision AS relevance
-      FROM "CatalogProduct" product
+      FROM product_text product
       CROSS JOIN input
       WHERE (input.category_filter IS NULL OR product."category" = input.category_filter)
         AND (
-          input.query = ''
+          NOT input.has_query
           OR product."category" = ANY(input.synonym_categories)
-          OR public.rotulai_unaccent(lower(product."name")) %> input.query
-          OR public.rotulai_unaccent(lower(product."brand")) %> input.query
           OR EXISTS (
             SELECT 1
             FROM unnest(input.terms) AS search_term(term)
-            WHERE public.rotulai_unaccent(lower(product."name")) %> search_term.term
-              OR public.rotulai_unaccent(lower(product."brand")) %> search_term.term
+            WHERE strpos(' ' || product.normalized_name || ' ', ' ' || search_term.term || ' ') > 0
+              OR strpos(' ' || product.normalized_brand || ' ', ' ' || search_term.term || ' ') > 0
+          )
+          OR EXISTS (
+            SELECT 1
+            FROM unnest(input.keywords) AS search_term(term)
+            CROSS JOIN LATERAL (
+              SELECT word FROM regexp_split_to_table(product.normalized_name, ' ') AS name_word(word)
+              UNION ALL
+              SELECT word FROM regexp_split_to_table(product.normalized_brand, ' ') AS brand_word(word)
+            ) AS product_word
+            WHERE char_length(search_term.term) >= 5
+              AND similarity(search_term.term, product_word.word) >= 0.5
           )
           OR EXISTS (
             SELECT 1
@@ -125,8 +155,21 @@ function buildCatalogSearchCte(params: {
                 ingredient."searchTerms" && input.phrases
                 OR EXISTS (
                   SELECT 1
+                  FROM unnest(input.terms) AS search_term(term)
+                  WHERE strpos(
+                    ' ' || regexp_replace(trim(public.rotulai_unaccent(lower(ingredient."name"))), '[^[:alnum:]]+', ' ', 'g') || ' ',
+                    ' ' || search_term.term || ' '
+                  ) > 0
+                )
+                OR EXISTS (
+                  SELECT 1
                   FROM unnest(input.keywords) AS search_term(term)
-                  WHERE public.rotulai_unaccent(lower(ingredient."name")) %> search_term.term
+                  CROSS JOIN LATERAL regexp_split_to_table(
+                    regexp_replace(trim(public.rotulai_unaccent(lower(ingredient."name"))), '[^[:alnum:]]+', ' ', 'g'),
+                    ' '
+                  ) AS ingredient_word(word)
+                  WHERE char_length(search_term.term) >= 5
+                    AND similarity(search_term.term, ingredient_word.word) >= 0.5
                 )
               )
           )
@@ -183,7 +226,6 @@ export async function listPublicProducts(query: PublicProductListQuery) {
   const cte = buildCatalogSearchCte(search);
 
   const result = await prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SET LOCAL pg_trgm.word_similarity_threshold = '0.5'`;
     const [summary] = await tx.$queryRaw<CatalogSearchSummary[]>(Prisma.sql`
       ${cte}
       SELECT COUNT(*)::int AS total, COALESCE(BOOL_OR("exactMatch"), false) AS "hasExactMatch"
@@ -203,6 +245,7 @@ export async function listPublicProducts(query: PublicProductListQuery) {
   return {
     ...buildPage(items.slice(0, query.pageSize), result.summary?.total ?? 0, query.page, query.pageSize),
     suggestions,
+    suggestionType: search.suggestionType ?? (search.hasQuery && !result.summary?.hasExactMatch ? 'correction' : null),
   };
 }
 

@@ -198,6 +198,91 @@ describe('catálogo público', () => {
     expect(response.body.items[0].slug).toBe('cerave-moisturizing-cream');
   });
 
+  it('mantém equivalência singular/plural, usa palavras inteiras e expande os termos leigos', async () => {
+    const { sunscreenProduct } = await createCatalogFixture();
+    const niacinamide = await prisma.ingredient.create({
+      data: {
+        name: 'Niacinamide',
+        normalizedName: 'niacinamide',
+        synonyms: ['Niacinamida'],
+        searchTerms: ['niacinamide', 'niacinamida'],
+        functions: ['Condicionante'],
+      },
+    });
+    await Promise.all([
+      prisma.catalogProduct.create({
+        data: {
+          slug: 'retinol-serum-search-test',
+          name: 'Retinol Serum',
+          brand: 'Vichy',
+          category: 'SERUM',
+          referenceUrl: 'https://example.test/retinol',
+        },
+      }),
+      prisma.catalogProduct.create({
+        data: {
+          slug: 'solution-serum-search-test',
+          name: 'Solution Serum',
+          brand: 'Vichy',
+          category: 'SERUM',
+          referenceUrl: 'https://example.test/solution',
+        },
+      }),
+      prisma.catalogProduct.create({
+        data: {
+          slug: 'avene-cicalfate-search-test',
+          name: 'Cicalfate Restorative Cream',
+          brand: 'Avène',
+          category: 'HIDRATANTE',
+          referenceUrl: 'https://example.test/cicalfate',
+        },
+      }),
+      prisma.catalogProduct.create({
+        data: {
+          slug: 'niacinamide-serum-search-test',
+          name: 'Niacinamide Serum',
+          brand: 'Vichy',
+          category: 'SERUM',
+          referenceUrl: 'https://example.test/niacinamide',
+          ingredients: {
+            create: [{ position: 1, ingredient: { connect: { id: niacinamide.id } } }],
+          },
+        },
+      }),
+      prisma.catalogSearchSynonym.create({
+        data: { phrase: 'coceira', normalizedPhrase: 'coceira', expansions: ['cleanser'], category: null },
+      }),
+    ]);
+
+    const total = async (q: string) => {
+      const response = await request(app).get('/api/catalog/products').query({ q }).expect(200);
+      return response.body.total as number;
+    };
+    const result = async (q: string) => {
+      const response = await request(app).get('/api/catalog/products').query({ q }).expect(200);
+      return response.body as { total: number; items: Array<{ slug: string }> };
+    };
+    const rugaTotal = await total('ruga');
+
+    expect(rugaTotal).toBeGreaterThan(0);
+    expect(await total('rugas')).toBe(rugaTotal);
+    expect(await total('espinha')).toBe(await total('espinhas'));
+    expect(await total('espina')).toBe(await total('espinha'));
+    expect(await total('protetor')).toBe(await total('protetor solar'));
+    expect(await total('linhas de expressão')).toBeGreaterThan(0);
+    expect(await total('cicatriz')).toBeGreaterThan(0);
+    expect(await total('marcas de espinha')).toBeGreaterThan(0);
+    expect(await total('coceira')).toBe(0);
+    expect(await total('avene')).toBeGreaterThan(0);
+    expect(await total('cicalfate')).toBeGreaterThan(0);
+    expect(await total('niacinamida')).toBeGreaterThan(0);
+
+    const sunSpots = await result('mancha de sol');
+    expect(sunSpots.total).toBeLessThan(89);
+    expect(sunSpots.items.map((item) => item.slug)).toContain(sunscreenProduct.slug);
+    expect((await result('sol')).items.map((item) => item.slug)).not.toContain('solution-serum-search-test');
+  });
+
   it('não mistura produtos pessoais nos resultados públicos', async () => {
     const user = await registerUser(app);
     await createProduct(app, user, { name: 'Produto Privado Exclusivo', brand: 'Marca da Pessoa' });

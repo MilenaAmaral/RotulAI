@@ -68,7 +68,7 @@ O catálogo público é independente dos produtos pessoais. As páginas `/catalo
 
 O endpoint de detalhe público de ingrediente retorna 404 quando o registro não está curado. Nenhum destes endpoints retorna `userId` ou produtos do catálogo pessoal. A lista de produtos do catálogo público é alimentada separadamente por `npm run db:seed-public -w backend`; o comando faz upsert dos registros e vínculos, sem excluir dados.
 
-A listagem de produtos retorna a página de resultados e `suggestions`, uma lista separada para a mensagem “Você quis dizer…” quando não há correspondência exata. A expansão usa a tabela `CatalogSearchSynonym`; consulte [docs/BUSCA-CATALOGO.md](./BUSCA-CATALOGO.md) para sinônimos, consultas de regressão e benchmark.
+A listagem de produtos retorna a página de resultados, `suggestions` e `suggestionType` (`related`, `correction` ou `null`). O tipo distingue resultados relacionados pela expansão do dicionário de sugestões de correção de digitação. A expansão usa a tabela `CatalogSearchSynonym`; consulte [docs/BUSCA-CATALOGO.md](./BUSCA-CATALOGO.md) para sinônimos, consultas de regressão e benchmark.
 
 ## Favoritos (usuário autenticado)
 

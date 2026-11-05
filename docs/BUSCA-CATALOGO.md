@@ -2,7 +2,7 @@
 
 ## Funcionamento
 
-A busca pública consulta apenas `CatalogProduct` e suas relações públicas de ingredientes; não mistura produtos pessoais. O termo é normalizado sem acentos e pontuação, expandido com sinônimos persistidos em `CatalogSearchSynonym` e comparado a nome, marca, categoria e ingredientes. A ordenação combina nome/marca exatos, categoria resolvida, ingrediente correspondente, similaridade por trigramas e uma ordenação estável por marca/nome.
+A busca pública consulta apenas `CatalogProduct` e suas relações públicas de ingredientes; não mistura produtos pessoais. O termo é normalizado sem acentos e pontuação, reduz plurais simples ao singular e ignora palavras de ligação na expansão de sinônimos. Termos são comparados como palavras/frases completas, inclusive na busca de ingredientes. A tolerância de um caractere aplica-se a termos do dicionário com pelo menos cinco letras e não a pedaços de palavras. A ordenação combina nome/marca exatos, categoria resolvida, ingrediente correspondente, similaridade trigram entre palavras inteiras e uma ordenação estável por marca/nome.
 
 A migration `backend/prisma/migrations/20261019130000_catalog_search/` habilita `pg_trgm` e `unaccent`, cria a função imutável usada pelas expressões e adiciona índices GIN trigram em nome, marca e nome do ingrediente. A tabela `Ingredient.searchTerms` continua apoiada pelo seu índice GIN array para sinônimos de ingredientes.
 
@@ -10,9 +10,9 @@ As extensões e índices de expressão são criados por SQL versionado porque de
 
 ## Sinônimos
 
-Os sinônimos iniciais ficam em `backend/prisma/search-synonyms.ts` e são inseridos pelo comando seguro `npm run db:seed-public -w backend`. O seed só cria sinônimos ausentes (`upsert` sem atualizar registros já existentes), então ajustes operacionais feitos na tabela permanecem. Para editar, altere `phrase`, `expansions` e, quando aplicável, `category` em `CatalogSearchSynonym`; `normalizedPhrase` deve ser a forma minúscula sem acentos e pontuação.
+Os sinônimos iniciais ficam em `backend/prisma/search-synonyms.ts` e são inseridos pelo comando seguro `npm run db:seed-public -w backend`. O seed só cria sinônimos ausentes (`upsert` sem atualizar registros já existentes), então ajustes operacionais feitos na tabela permanecem. Para editar, altere `phrase`, `expansions` e, quando aplicável, `category` em `CatalogSearchSynonym`; `normalizedPhrase` deve ser minúscula, sem acentos, pontuação, stopwords ou plural simples. Formas singulares/plurais equivalentes são consolidadas durante a busca.
 
-Não existe endpoint público para alterar as regras. A API de leitura usa a tabela como fonte de verdade e expande apenas frases completas, evitando substituições acidentais dentro de outras palavras.
+Não existe endpoint público para alterar as regras. A API de leitura usa a tabela como fonte de verdade e expande frases completas, evitando substituições acidentais dentro de outras palavras. A resposta inclui `suggestionType`: `related` para expansão do dicionário, `correction` para correção aproximada e `null` quando não há sugestão. O termo `coceira` foi removido do dicionário.
 
 ## Consultas de regressão
 

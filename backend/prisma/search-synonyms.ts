@@ -1,5 +1,5 @@
 import { ProductCategory } from '../src/generated/prisma/enums.js';
-import { normalizeSearchText } from '../src/modules/catalog/search-normalization.js';
+import { normalizeSearchPhrase } from '../src/modules/catalog/search-normalization.js';
 
 const definitions = [
   { phrase: 'serave', expansions: ['cerave'], category: null },
@@ -77,7 +77,17 @@ const definitions = [
   })),
   ...['manchas', 'mancha', 'melasma'].map((phrase) => ({
     phrase,
-    expansions: ['vitamin c', 'ascorbic acid', 'azelaic acid', 'tranexamic acid', 'liftactiv'],
+    expansions: [
+      'vitamin c',
+      'ascorbic acid',
+      'azelaic acid',
+      'tranexamic acid',
+      'liftactiv',
+      'protetor solar',
+      'filtro solar',
+      'sunscreen',
+      'anthelios',
+    ],
     category: null,
   })),
   ...['olheiras', 'olheira', 'olhos'].map((phrase) => ({
@@ -91,13 +101,50 @@ const definitions = [
     category: null,
   })),
   {
+    phrase: 'linhas de expressão',
+    expansions: ['expression lines', 'retinol', 'liftactiv', 'hyaluronic acid'],
+    category: null,
+  },
+  {
+    phrase: 'cicatriz',
+    expansions: ['scar', 'cicaplast', 'cicalfate', 'madecassoside', 'centella asiatica'],
+    category: null,
+  },
+  {
+    phrase: 'marcas de espinha',
+    expansions: ['acne', 'azelaic acid', 'niacinamide', 'tranexamic acid', 'cicaplast'],
+    category: null,
+  },
+  {
     phrase: 'acido hialuronico',
     expansions: ['hyaluronic acid', 'sodium hyaluronate'],
     category: null,
   },
 ];
 
-export const CATALOG_SEARCH_SYNONYMS = definitions.map((item) => ({
-  ...item,
-  normalizedPhrase: normalizeSearchText(item.phrase),
+const normalizedDefinitions = new Map<
+  string,
+  { phrase: string; expansions: Set<string>; category: (typeof definitions)[number]['category'] }
+>();
+
+for (const item of definitions) {
+  const normalizedPhrase = normalizeSearchPhrase(item.phrase);
+  const existing = normalizedDefinitions.get(normalizedPhrase);
+  if (existing) {
+    item.expansions.forEach((expansion) => existing.expansions.add(expansion));
+    existing.category ??= item.category;
+  } else {
+    normalizedDefinitions.set(normalizedPhrase, {
+      phrase: item.phrase,
+      expansions: new Set(item.expansions),
+      category: item.category,
+    });
+  }
+}
+
+export const CATALOG_SEARCH_SYNONYMS = [...normalizedDefinitions].map(([normalizedPhrase, item]) => ({
+  phrase: item.phrase,
+  normalizedPhrase,
+  expansions: [...item.expansions],
+  category: item.category,
 }));
