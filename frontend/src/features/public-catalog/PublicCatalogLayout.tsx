@@ -18,7 +18,7 @@ export function PublicCatalogLayout() {
       </a>
       <header className="border-b border-line bg-white">
         <div className="mx-auto flex min-h-16 max-w-[1120px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-8">
-          <Link to="/" aria-label="Rotulai — início">
+          <Link to="/" aria-label="RotulAI — início">
             <Logo />
           </Link>
           <nav aria-label="Catálogo público" className="flex flex-wrap items-center gap-1">

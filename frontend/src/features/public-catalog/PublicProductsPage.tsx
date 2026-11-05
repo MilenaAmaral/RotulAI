@@ -53,7 +53,7 @@ export function PublicProductsPage() {
   return (
     <>
       <SeoMeta
-        title="Catálogo público de cosméticos | Rotulai"
+        title="Catálogo público de cosméticos | RotulAI"
         description="Pesquise produtos e confira listas de ingredientes com referências. Informação educacional, sem diagnóstico ou indicação de tratamento."
         canonicalPath="/catalogo"
       />

@@ -1,9 +1,11 @@
 import { Link, useParams } from 'react-router';
 import { useAuth } from '../../auth/auth-context';
 import { Badge } from '../../components/ui/Badge';
+import { ButtonLink } from '../../components/ui/Button';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { EducationalDisclaimer, ErrorState } from '../../components/ui/States';
 import { LoadingBlock } from '../../components/ui/Spinner';
+import { ApiError } from '../../lib/api';
 import { CATEGORY_LABELS } from '../../lib/format';
 import { usePublicProduct } from '../../lib/queries';
 import { SeoMeta } from './SeoMeta';
@@ -16,10 +18,23 @@ export function PublicProductPage() {
 
   if (product.isLoading) return <LoadingBlock label="Carregando produto..." />;
   if (product.isError || !product.data) {
+    const notFound = product.error instanceof ApiError && product.error.status === 404;
     return (
       <>
         <PageHeader title="Produto" back={{ to: '/catalogo', label: 'Catálogo público' }} />
-        <ErrorState error={product.error} onRetry={() => void product.refetch()} />
+        {notFound ? (
+          <div
+            role="alert"
+            className="flex flex-col items-start gap-3 rounded-[var(--radius-panel)] border border-[#fecdca] bg-danger-soft px-5 py-4 sm:flex-row sm:items-center"
+          >
+            <p className="flex-1 text-graphite">Este produto não existe ou foi removido.</p>
+            <ButtonLink to="/catalogo" variant="secondary">
+              Voltar ao catálogo
+            </ButtonLink>
+          </div>
+        ) : (
+          <ErrorState error={product.error} onRetry={() => void product.refetch()} />
+        )}
       </>
     );
   }
@@ -30,17 +45,19 @@ export function PublicProductPage() {
   return (
     <>
       <SeoMeta
-        title={`${data.name} | Rotulai`}
+        title={`${data.name} | RotulAI`}
         description={description}
         canonicalPath={`/catalogo/produtos/${data.slug}`}
       />
-      <PageHeader title={data.name} description={data.brand} back={{ to: '/catalogo', label: 'Catálogo público' }} />
+      <PageHeader
+        title={data.name}
+        description={data.brand}
+        back={{ to: '/catalogo', label: 'Catálogo público' }}
+        actions={<FavoriteButton productId={data.id} />}
+      />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="flex flex-col gap-6">
           <section className="panel p-5 sm:p-6">
-            <div className="mb-5 flex justify-end">
-              <FavoriteButton productId={data.id} />
-            </div>
             <dl className="grid gap-4 sm:grid-cols-2">
               <div>
                 <dt className="text-sm text-ink-soft">Marca</dt>

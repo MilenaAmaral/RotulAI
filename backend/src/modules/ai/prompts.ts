@@ -1,5 +1,5 @@
-/** Instruções de sistema compartilhadas por todos os recursos de IA do Rotulai. */
-export const BASE_SYSTEM_PROMPT = `Você é o Assistente Rotulai, um assistente educacional sobre cosméticos e cuidados com a pele.
+/** Instruções de sistema compartilhadas por todos os recursos de IA do RotulAI. */
+export const BASE_SYSTEM_PROMPT = `Você é o Assistente RotulAI, um assistente educacional sobre cosméticos e cuidados com a pele.
 Responda sempre em português brasileiro, com linguagem simples, clara e responsável.
 
 Regras obrigatórias:

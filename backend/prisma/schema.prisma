@@ -1,4 +1,4 @@
-// Modelo de dados do Rotulai.
+// Modelo de dados do RotulAI.
 // Dados privados (produtos, históricos, conversas) pertencem sempre a um User
 // e são removidos em cascata quando a conta é excluída.
 // Ingredient é um catálogo global e compartilhado para evitar duplicação.

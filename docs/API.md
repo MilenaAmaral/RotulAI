@@ -1,4 +1,4 @@
-# API do Rotulai
+# API do RotulAI
 
 Base: `/api`. Documentação interativa em `/api/docs` (Swagger UI) e especificação OpenAPI 3.1 em `/api/docs.json`.
 
@@ -6,7 +6,7 @@ Base: `/api`. Documentação interativa em `/api/docs` (Swagger UI) e especifica
 
 1. `POST /auth/login` ou `/auth/register` retorna `{ user, accessToken }` e define o cookie `rotulai_rt` (httpOnly, `path=/api/auth`). `user.role` é `FREE`, `PREMIUM` ou `ADMIN`.
 2. Envie `Authorization: Bearer <accessToken>` nas rotas privadas. O token expira em 15 minutos.
-3. Para renovar, chame `POST /auth/refresh` com o cookie e o cabeçalho `X-Requested-With: Rotulai`.
+3. Para renovar, chame `POST /auth/refresh` com o cookie e o cabeçalho `X-Requested-With: RotulAI`.
 
 ## Rotina agendada
 

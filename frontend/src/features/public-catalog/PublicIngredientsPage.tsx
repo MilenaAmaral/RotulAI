@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Pagination } from '../../components/ui/Pagination';
-import { ErrorState, EmptyState, EducationalDisclaimer } from '../../components/ui/States';
+import { ErrorState, EmptyState } from '../../components/ui/States';
 import { LoadingBlock } from '../../components/ui/Spinner';
 import { inputClass } from '../../components/ui/styles';
 import { usePublicIngredientFunctions, usePublicIngredients } from '../../lib/queries';
@@ -19,8 +19,8 @@ export function PublicIngredientsPage() {
   return (
     <>
       <SeoMeta
-        title="Referência de ingredientes cosméticos | Rotulai"
-        description="Pesquise ingredientes cosméticos, funções, cuidados e fontes da base educativa curada do Rotulai."
+        title="Referência de ingredientes cosméticos | RotulAI"
+        description="Pesquise ingredientes cosméticos, funções, cuidados e fontes da base educativa curada do RotulAI."
         canonicalPath="/catalogo/ingredientes"
       />
       <PageHeader
@@ -104,7 +104,6 @@ export function PublicIngredientsPage() {
           <Pagination page={ingredients.data.page} totalPages={ingredients.data.totalPages} onChange={setPage} />
         </>
       )}
-      <EducationalDisclaimer className="mt-6" />
     </>
   );
 }

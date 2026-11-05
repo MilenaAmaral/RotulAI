@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { api, onSessionExpired, refreshSession, setAccessToken } from '../lib/api';
+import { api, onSessionExpired, refreshSession, setAccessToken, setSessionHint } from '../lib/api';
 import type { Session, User } from '../types/api';
 import type { AuthStatus } from './auth-context';
 import { AuthContext } from './auth-context';
@@ -13,12 +13,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const applySession = useCallback((session: Session) => {
     setAccessToken(session.accessToken);
+    setSessionHint(true);
     setUser(session.user);
     setStatus('authenticated');
   }, []);
 
   const clearSession = useCallback(() => {
     setAccessToken(null);
+    setSessionHint(false);
     setUser(null);
     setStatus('anonymous');
     queryClient.clear();
@@ -56,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await api<void>('/api/auth/logout', { method: 'POST', auth: false, headers: { 'X-Requested-With': 'Rotulai' } });
+      await api<void>('/api/auth/logout', { method: 'POST', auth: false, headers: { 'X-Requested-With': 'RotulAI' } });
     } finally {
       clearSession();
     }

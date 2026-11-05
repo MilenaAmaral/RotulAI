@@ -1,8 +1,8 @@
-# Arquitetura do Rotulai
+# Arquitetura do RotulAI
 
 ## Visão geral
 
-O Rotulai é um monorepo com dois workspaces npm:
+O RotulAI é um monorepo com dois workspaces npm:
 
 - `backend/`: API REST em Express 5 + TypeScript, com Prisma 7 e PostgreSQL.
 - `frontend/`: SPA em React 19 + Vite, que consome exclusivamente a API.

@@ -64,7 +64,7 @@ function RecentActivity({ items }: { items: Dashboard['recentActivity'] }) {
       </h2>
       {items.length === 0 ? (
         <p className="text-ink-soft">
-          Suas ações no Rotulai aparecerão aqui: produtos cadastrados, consultas, comparações e conversas.
+          Suas ações no RotulAI aparecerão aqui: produtos cadastrados, consultas, comparações e conversas.
         </p>
       ) : (
         <ol className="divide-y divide-line">
@@ -162,7 +162,7 @@ export function DashboardPage() {
           <h1 className="text-[2rem] font-semibold sm:text-[2.4rem]">
             {greeting()}, {firstName}.
           </h1>
-          <p className="mt-1 text-ink-soft">Este é o resumo do seu Rotulai.</p>
+          <p className="mt-1 text-ink-soft">Este é o resumo do seu RotulAI.</p>
         </div>
       </header>
 

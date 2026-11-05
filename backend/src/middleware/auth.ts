@@ -48,7 +48,7 @@ export function requireRole(...allowedRoles: AccessProfile[]) {
  * o que bloqueia requisições forjadas (CSRF) vindas de outros sites.
  */
 export function requireCsrfHeader(req: Request, _res: Response, next: NextFunction): void {
-  if (req.get('X-Requested-With') !== 'Rotulai') {
+  if (req.get('X-Requested-With') !== 'RotulAI') {
     throw unauthorized('Requisição sem cabeçalho de proteção obrigatório.');
   }
   next();

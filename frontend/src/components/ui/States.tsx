@@ -79,7 +79,7 @@ export function Notice({
 export function EducationalDisclaimer({ className }: { className?: string }) {
   return (
     <Notice tone="caution" className={className}>
-      Conteúdo educacional. O Rotulai não diagnostica, não prescreve tratamentos e não garante ausência de alergias.
+      Conteúdo educacional. O RotulAI não diagnostica, não prescreve tratamentos e não garante ausência de alergias.
       Para orientação individual, consulte um dermatologista.
     </Notice>
   );

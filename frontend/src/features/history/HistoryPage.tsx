@@ -152,7 +152,7 @@ function HistoryTab({ tab }: { tab: (typeof TABS)[number] }) {
         <EmptyState
           icon={tab.icon}
           title={`Nenhum registro em ${tab.label.toLowerCase()}`}
-          description="Quando você usar esta área do Rotulai, os registros aparecerão aqui."
+          description="Quando você usar esta área do RotulAI, os registros aparecerão aqui."
         />
       )}
       {rows && total > 0 && (

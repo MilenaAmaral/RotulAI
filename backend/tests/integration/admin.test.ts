@@ -57,7 +57,7 @@ describe('autorização administrativa', () => {
         description: 'Ingrediente de referência.',
         usageInfo: 'Usado em cosméticos.',
         cautions: 'A tolerância individual varia.',
-        sources: [{ title: 'Referência', publisher: 'Rotulai', url: 'https://example.org/niacinamide' }],
+        sources: [{ title: 'Referência', publisher: 'RotulAI', url: 'https://example.org/niacinamide' }],
       })
       .expect(201);
     expect(ingredient.body).toMatchObject({ normalizedName: 'niacinamide', isCurated: true });

@@ -20,12 +20,12 @@ export function PublicIngredientPage() {
     );
   }
   const data = ingredient.data;
-  const summary = `${data.name}: funções cosméticas, informações gerais e fontes da referência educativa do Rotulai. Conteúdo sem diagnóstico ou indicação de tratamento.`;
+  const summary = `${data.name}: funções cosméticas, informações gerais e fontes da referência educativa do RotulAI. Conteúdo sem diagnóstico ou indicação de tratamento.`;
 
   return (
     <>
       <SeoMeta
-        title={`${data.name} — referência de ingrediente | Rotulai`}
+        title={`${data.name} — referência de ingrediente | RotulAI`}
         description={summary}
         canonicalPath={`/catalogo/ingredientes/${data.id}`}
       />

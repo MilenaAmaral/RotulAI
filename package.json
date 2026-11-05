@@ -2,7 +2,7 @@
   "name": "rotulai",
   "private": true,
   "version": "1.0.0",
-  "description": "Rotulai: plataforma de skincare com catálogo de cosméticos, análise de ingredientes e assistente de IA",
+  "description": "RotulAI: plataforma de skincare com catálogo de cosméticos, análise de ingredientes e assistente de IA",
   "workspaces": [
     "backend",
     "frontend"

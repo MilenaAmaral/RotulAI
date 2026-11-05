@@ -1,4 +1,4 @@
-# Rotulai
+# RotulAI
 
 Plataforma full stack para explorar cosméticos, consultar ingredientes de rótulos e comparar produtos, com um assistente de inteligência artificial integrado pelo servidor.
 
@@ -6,7 +6,7 @@ Plataforma full stack para explorar cosméticos, consultar ingredientes de rótu
 
 ![Capa do RotulAI](frontend/public/capa_rotuloai.jpg)
 
-> **Aviso:** o Rotulai fornece informações educacionais. Não diagnostica doenças, não prescreve tratamentos, não garante ausência de alergias e não substitui a orientação de um dermatologista.
+> **Aviso:** o RotulAI fornece informações educacionais. Não diagnostica doenças, não prescreve tratamentos, não garante ausência de alergias e não substitui a orientação de um dermatologista.
 
 ## Sumário
 
@@ -29,7 +29,7 @@ Plataforma full stack para explorar cosméticos, consultar ingredientes de rótu
 
 ## Problema
 
-Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas longas de ingredientes. Quem quer entender o que está usando acaba alternando entre buscas na internet, conteúdos sem fonte e anotações soltas. O Rotulai centraliza esse fluxo:
+Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas longas de ingredientes. Quem quer entender o que está usando acaba alternando entre buscas na internet, conteúdos sem fonte e anotações soltas. O RotulAI centraliza esse fluxo:
 
 - um catálogo público de produtos com a lista de ingredientes de cada um e a fonte da lista;
 - favoritos para a pessoa guardar os produtos que usa ou quer conhecer;
@@ -50,7 +50,7 @@ Rótulos de cosméticos usam a nomenclatura INCI, em inglês ou latim, e listas 
 | **Administração**          | Perfil `ADMIN` mantém produtos do catálogo, ingredientes curados, sinônimos de busca e regras de indicação versionadas. Ingredientes são vinculados sem duplicação (inclusive por sinônimo: "Glicerina" = "Glycerin").                                                     |
 | **Ingredientes**           | Consulta por nome INCI ou nome comum, base de referência com 30 ingredientes revisados, sinônimos, funções, uso, cuidados e fontes. Conteúdo da base e explicação da IA aparecem em blocos separados. Quando não há informação confiável, a interface informa a limitação. |
 | **Comparador**             | Compara dois favoritos: ingredientes em comum, exclusivos de cada produto, marca, categoria e percentual de sobreposição (índice de Jaccard). A IA pode explicar as diferenças, sem declarar qual produto é melhor.                                                        |
-| **Assistente Rotulai**     | Chat com histórico, sugestões iniciais, contexto opcional de até 2 favoritos, limite de caracteres, indicador de digitação e mensagens claras de indisponibilidade.                                                                                                        |
+| **Assistente RotulAI**     | Chat com histórico, sugestões iniciais, contexto opcional de até 2 favoritos, limite de caracteres, indicador de digitação e mensagens claras de indisponibilidade.                                                                                                        |
 | **Histórico**              | Consultas de ingredientes, comparações e conversas persistidas no PostgreSQL, com exclusão individual, limpeza por tipo e política de retenção visível ao usuário.                                                                                                         |
 
 ### Rotas da aplicação
@@ -100,7 +100,7 @@ As páginas públicas não exigem conta. As áreas pessoais redirecionam visitan
 ```
 
 - O front-end só conversa com a API. A chave de IA existe apenas no servidor.
-- `ThemeProvider` compartilha a preferência de tema da interface; a escolha fica no `localStorage` do navegador e não contém dados de autenticação.
+- `ThemeProvider` compartilha a preferência de tema da interface; a escolha fica no `localStorage` do navegador e não contém credenciais.
 - Regras de negócio, validações e acesso a dados ficam no back-end, organizados por módulo (`routes` → `service` → Prisma).
 - A comparação de produtos é uma função pura (`compare-products.ts`), testável sem banco.
 - A IA passa por `AiService`, que aplica tempo limite, cota diária, validação da resposta e conversão de erros, independentemente do provedor.
@@ -110,7 +110,7 @@ Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md). O funcionamento da busca
 ## Estrutura de pastas
 
 ```
-Rotulai/
+RotulAI/
 ├── backend/
 │   ├── prisma/              # schema, migrações versionadas e seed
 │   ├── src/
@@ -207,7 +207,7 @@ O seed público cadastra **101 produtos de skincare** de 13 marcas encontradas n
 - As listas de ingredientes foram copiadas das páginas públicas do [Skinsort](https://skinsort.com) em 18/10/2026. Cada produto guarda o link da página de origem (`referenceUrl`), exibido na tela de detalhes.
 - Fórmulas mudam e podem variar por país e lote. O rótulo da embalagem é sempre a fonte definitiva.
 - Os dados ficam em `backend/prisma/data/catalogo-produtos.json`, validados por teste automatizado com as mesmas regras do cadastro pela API.
-- As marcas e nomes de produtos pertencem aos respectivos titulares. O Rotulai não tem afiliação com nenhuma delas, não exibe imagens de produtos e não faz recomendação de compra.
+- As marcas e nomes de produtos pertencem aos respectivos titulares. O RotulAI não tem afiliação com nenhuma delas, não exibe imagens de produtos e não faz recomendação de compra.
 
 ### 5. Executar
 
@@ -381,9 +381,9 @@ Particularidades da execução como função da Vercel:
 
 - Senhas com bcryptjs (custo 12); política mínima de 8 caracteres com letras e números.
 - Access token JWT de 15 minutos mantido **apenas em memória** no navegador (nunca em `localStorage`).
-- A única preferência da interface salva no `localStorage` é o tema claro/escuro (`rotulai-theme`); tokens e dados de sessão não são armazenados ali.
+- O `localStorage` guarda a preferência de tema (`rotulai-theme`) e um sinal sem credenciais de sessão (`rotulai-session-hint`); tokens e dados de sessão não são armazenados ali.
 - Refresh token opaco de 256 bits em cookie `httpOnly`, com `path=/api/auth`, armazenado no banco somente como hash SHA-256, rotacionado a cada uso; reuso de um token antigo revoga toda a família de sessões.
-- Rotas de refresh e logout exigem o cabeçalho `X-Requested-With: Rotulai`, bloqueando requisições forjadas de outros sites (CSRF).
+- Rotas de refresh e logout exigem o cabeçalho `X-Requested-With: RotulAI`, bloqueando requisições forjadas de outros sites (CSRF).
 - Autorização no servidor: toda consulta de dados privados filtra por `userId`. Recursos de outro usuário retornam 404, sem revelar sua existência. Rotas `/api/admin/*` exigem perfil `ADMIN`, consultado no banco a cada requisição.
 - Validação com Zod em todas as entradas; corpo limitado a 64 KB. Links exibidos na interface (fontes e referências) precisam começar com `https://`.
 - Consultas SQL escritas à mão (busca do catálogo) usam parâmetros do Prisma (`Prisma.sql`), nunca concatenação de texto.

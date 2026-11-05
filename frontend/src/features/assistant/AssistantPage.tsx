@@ -71,7 +71,7 @@ function MessageBubble({ message }: { message: Pick<ChatMessage, 'role' | 'conte
           isUser ? 'rounded-br-[4px] bg-graphite text-white' : 'rounded-bl-[4px] border border-line bg-white',
         )}
       >
-        <span className="sr-only">{isUser ? 'Você disse:' : 'Assistente Rotulai respondeu:'}</span>
+        <span className="sr-only">{isUser ? 'Você disse:' : 'Assistente RotulAI respondeu:'}</span>
         {isUser ? <p className="whitespace-pre-wrap">{message.content}</p> : <AiText text={message.content} />}
       </div>
     </li>
@@ -181,7 +181,7 @@ export function AssistantPage() {
     <>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[1.75rem] font-semibold sm:text-[2rem]">Assistente Rotulai</h1>
+          <h1 className="text-[1.75rem] font-semibold sm:text-[2rem]">Assistente RotulAI</h1>
           <p className="mt-1.5 max-w-2xl text-ink-soft">
             Pergunte sobre termos de rótulos, ingredientes e organização da sua rotina.
           </p>

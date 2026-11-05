@@ -9,7 +9,7 @@ export function IngredientReference({ ingredient }: { ingredient: IngredientDeta
     return (
       <Notice title="Sem informações verificadas">
         <strong>{ingredient.name}</strong> aparece em rótulos cadastrados, mas ainda não tem conteúdo revisado na base
-        de referência do Rotulai. Não exibimos descrições sem fonte. Você pode pedir uma explicação geral à IA, que será
+        de referência do RotulAI. Não exibimos descrições sem fonte. Você pode pedir uma explicação geral à IA, que será
         identificada como tal.
       </Notice>
     );
@@ -26,7 +26,7 @@ export function IngredientReference({ ingredient }: { ingredient: IngredientDeta
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 id="base-referencia" className="flex items-center gap-2 text-base font-semibold">
           <BookOpen size={18} aria-hidden="true" />
-          Base de referência do Rotulai
+          Base de referência do RotulAI
         </h2>
         <Badge tone="success">Conteúdo revisado</Badge>
       </div>

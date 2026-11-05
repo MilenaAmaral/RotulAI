@@ -39,7 +39,7 @@ async function bootstrapAdmin(): Promise<void> {
 
   await prisma.user.create({
     data: {
-      name: 'Admin Rotulai',
+      name: 'Admin RotulAI',
       email,
       passwordHash: await bcrypt.hash(password, env.BCRYPT_ROUNDS),
       role: AccessProfile.ADMIN,

@@ -20,15 +20,33 @@ export class ApiError extends Error {
 }
 
 /*
- * O access token fica apenas em memória (nunca em localStorage).
- * A sessão é restaurada ao recarregar a página pelo refresh token em cookie httpOnly.
+ * O access token fica apenas em memória; um sinal sem credenciais evita refresh para visitantes anônimos.
  */
 let accessToken: string | null = null;
 let refreshInFlight: Promise<Session | null> | null = null;
 let sessionExpiredHandler: (() => void) | null = null;
+const SESSION_HINT_KEY = 'rotulai-session-hint';
 
 export function setAccessToken(token: string | null): void {
   accessToken = token;
+}
+
+export function setSessionHint(available: boolean): void {
+  try {
+    if (available) localStorage.setItem(SESSION_HINT_KEY, 'true');
+    else localStorage.removeItem(SESSION_HINT_KEY);
+  } catch (error) {
+    if (!(error instanceof DOMException && error.name === 'SecurityError')) throw error;
+  }
+}
+
+function hasSessionHint(): boolean {
+  try {
+    return localStorage.getItem(SESSION_HINT_KEY) === 'true';
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'SecurityError') return false;
+    throw error;
+  }
 }
 
 export function onSessionExpired(handler: (() => void) | null): void {
@@ -63,18 +81,21 @@ async function rawFetch(path: string, init: RequestInit): Promise<Response> {
 
 /** Renova a sessão. Chamadas simultâneas compartilham a mesma requisição (evita reuso do token rotacionado). */
 export function refreshSession(): Promise<Session | null> {
+  if (!accessToken && !hasSessionHint()) return Promise.resolve(null);
   refreshInFlight ??= (async () => {
     try {
       const response = await rawFetch('/api/auth/refresh', {
         method: 'POST',
-        headers: { 'X-Requested-With': 'Rotulai' },
+        headers: { 'X-Requested-With': 'RotulAI' },
       });
       if (!response.ok) {
         setAccessToken(null);
+        setSessionHint(false);
         return null;
       }
       const session = (await response.json()) as Session;
       setAccessToken(session.accessToken);
+      setSessionHint(true);
       return session;
     } catch {
       return null;

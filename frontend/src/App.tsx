@@ -6,6 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router';
 import { RedirectIfAuthenticated, RequireAuth, RequireRole } from './auth/RequireAuth';
 import { AppLayout } from './components/layout/AppLayout';
 import { PublicCatalogLayout } from './features/public-catalog/PublicCatalogLayout';
+import { NotFoundPage } from './features/NotFoundPage';
 
 /** Carrega páginas sob demanda para reduzir o pacote inicial. */
 function lazyPage<M extends Record<string, unknown>>(loader: () => Promise<M>, name: keyof M) {
@@ -93,11 +94,11 @@ const router = createBrowserRouter([
             element: <RequireRole role="ADMIN" />,
             children: [{ path: '/admin', lazy: lazyPage(() => import('./features/admin/AdminPage'), 'AdminPage') }],
           },
-          { path: '*', lazy: lazyPage(() => import('./features/NotFoundPage'), 'NotFoundPage') },
         ],
       },
     ],
   },
+  { path: '*', element: <NotFoundPage /> },
 ]);
 
 export function App() {

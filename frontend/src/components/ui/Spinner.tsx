@@ -18,7 +18,7 @@ export function FullPageLoader() {
   return (
     <div role="status" className="flex min-h-dvh items-center justify-center gap-3 text-ink-soft">
       <Spinner />
-      <span>Carregando o Rotulai...</span>
+      <span>Carregando o RotulAI...</span>
     </div>
   );
 }

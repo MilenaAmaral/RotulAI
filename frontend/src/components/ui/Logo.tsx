@@ -1,7 +1,7 @@
 import { cn } from './cn';
 
 /**
- * Logotipo tipográfico: "Rotul" em grafite e "ai" em verde sobre uma faixa de marca-texto menta,
+ * Logotipo tipográfico: "Rotul" em grafite e "AI" em verde sobre uma faixa de marca-texto menta,
  * como um trecho destacado em um rótulo.
  */
 export function Logo({ className, animated = false }: { className?: string; animated?: boolean }) {
@@ -17,7 +17,7 @@ export function Logo({ className, animated = false }: { className?: string; anim
         className={cn('rounded-[3px] px-[0.08em] text-brand', animated ? 'logo-sweep' : 'bg-brand-mark')}
         style={{ fontVariationSettings: '"wdth" 85' }}
       >
-        ai
+        AI
       </span>
       <span className="sr-only"> (página inicial)</span>
     </span>

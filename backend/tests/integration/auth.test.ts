@@ -8,7 +8,7 @@ beforeEach(resetDatabase);
 afterAll(() => prisma.$disconnect());
 
 const refresh = (cookie?: string) => {
-  const req = request(app).post('/api/auth/refresh').set('X-Requested-With', 'Rotulai');
+  const req = request(app).post('/api/auth/refresh').set('X-Requested-With', 'RotulAI');
   return cookie ? req.set('Cookie', cookie) : req;
 };
 
@@ -108,7 +108,7 @@ describe('autenticação', () => {
     const user = await registerUser(app);
     await request(app)
       .post('/api/auth/logout')
-      .set('X-Requested-With', 'Rotulai')
+      .set('X-Requested-With', 'RotulAI')
       .set('Cookie', user.cookie)
       .expect(204);
     await refresh(user.cookie).expect(401);

@@ -91,7 +91,7 @@ export function ProductDetailPage() {
             )}
             <p className="mt-4 text-sm text-ink-soft">
               {uncuratedIds.size > 0 &&
-                'Ingredientes com borda tracejada ainda não têm conteúdo revisado na base do Rotulai. '}
+                'Ingredientes com borda tracejada ainda não têm conteúdo revisado na base do RotulAI. '}
               Selecione um ingrediente para ver os detalhes. A ordem do rótulo costuma refletir concentração
               decrescente, mas não informa a quantidade exata.
             </p>

@@ -8,9 +8,9 @@ export function NotFoundPage() {
       </p>
       <h1 className="text-2xl font-semibold">Página não encontrada</h1>
       <p className="max-w-md text-ink-soft">
-        O endereço acessado não existe ou foi removido. Volte ao início para continuar.
+        O endereço acessado não existe ou foi removido. Volte ao catálogo para continuar.
       </p>
-      <ButtonLink to="/">Voltar ao início</ButtonLink>
+      <ButtonLink to="/catalogo">Voltar ao catálogo</ButtonLink>
     </div>
   );
 }

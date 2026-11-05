@@ -26,7 +26,7 @@ async function createCatalogFixture() {
         description: 'Conteúdo educativo de teste.',
         isCurated: true,
         sources: {
-          create: [{ title: 'Fonte de teste', publisher: 'Rotulai', url: 'https://example.test/ingredient' }],
+          create: [{ title: 'Fonte de teste', publisher: 'RotulAI', url: 'https://example.test/ingredient' }],
         },
       },
     }),

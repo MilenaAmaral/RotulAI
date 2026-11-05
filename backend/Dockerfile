@@ -1,4 +1,4 @@
-# Imagem de produção da API Rotulai (build a partir da raiz do repositório:
+# Imagem de produção da API RotulAI (build a partir da raiz do repositório:
 #   docker build -f backend/Dockerfile -t rotulai-api .)
 FROM node:22-alpine AS build
 WORKDIR /app

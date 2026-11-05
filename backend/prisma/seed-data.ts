@@ -1,5 +1,5 @@
 /**
- * Dados de demonstração do Rotulai.
+ * Dados de demonstração do RotulAI.
  *
  * - O usuário de demonstração é FICTÍCIO (sem dados pessoais reais).
  * - Os produtos do catálogo de demonstração estão em data/catalogo-produtos.json, com a fonte de cada lista.
