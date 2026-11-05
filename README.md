@@ -2,6 +2,8 @@
 
 Plataforma full stack para explorar cosméticos, consultar ingredientes de rótulos e comparar produtos, com um assistente de inteligência artificial integrado pelo servidor.
 
+**Aplicação publicada:** [rotulai-delta.vercel.app](https://rotulai-delta.vercel.app)
+
 ![Capa do RotulAI](frontend/public/capa_rotuloai.jpg)
 
 > **Aviso:** o Rotulai fornece informações educacionais. Não diagnostica doenças, não prescreve tratamentos, não garante ausência de alergias e não substitui a orientação de um dermatologista.
@@ -20,8 +22,10 @@ Plataforma full stack para explorar cosméticos, consultar ingredientes de rótu
 - [API](#api)
 - [Build e deploy](#build-e-deploy)
 - [Segurança](#segurança)
+- [Dados e retenção](#dados-e-retenção)
 - [Limitações conhecidas](#limitações-conhecidas)
 - [Próximas melhorias](#próximas-melhorias)
+- [Licença](#licença)
 
 ## Problema
 
@@ -70,9 +74,9 @@ As páginas públicas não exigem conta. As áreas pessoais redirecionam visitan
 
 ## Tecnologias
 
-**Front-end:** React 19, TypeScript, Vite, Tailwind CSS 4 com tokens CSS para os temas claro/escuro, React Router, TanStack Query, React Hook Form, Zod, Lucide React.
+**Front-end:** React 19, TypeScript, Vite, Tailwind CSS 4 com tokens CSS para os temas claro/escuro, React Router, TanStack Query, React Hook Form, Zod, Lucide React, fontes Bricolage Grotesque e Hanken Grotesk (Fontsource).
 
-**Back-end:** Node.js, TypeScript, Express 5, Zod, Prisma ORM 7 (adapter `pg`), PostgreSQL 16 (com `pg_trgm` e `unaccent` para a busca), Swagger UI / OpenAPI 3.1, Helmet, express-rate-limit, bcrypt, JWT, Pino.
+**Back-end:** Node.js, TypeScript, Express 5, Zod, Prisma ORM 7 (adapter `pg`), PostgreSQL 16 (com `pg_trgm` e `unaccent` para a busca), Swagger UI / OpenAPI 3.1, Helmet, express-rate-limit, bcryptjs, JWT, Pino.
 
 **IA:** SDK oficial da Anthropic atrás de uma interface própria (`LlmProvider`), selecionada por variável de ambiente.
 
@@ -101,7 +105,7 @@ As páginas públicas não exigem conta. As áreas pessoais redirecionam visitan
 - A comparação de produtos é uma função pura (`compare-products.ts`), testável sem banco.
 - A IA passa por `AiService`, que aplica tempo limite, cota diária, validação da resposta e conversão de erros, independentemente do provedor.
 
-Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
+Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md). O funcionamento da busca do catálogo (sinônimos, tolerância a erros de digitação e índices) está em [docs/BUSCA-CATALOGO.md](docs/BUSCA-CATALOGO.md).
 
 ## Estrutura de pastas
 
@@ -116,7 +120,8 @@ Rotulai/
 │   │   ├── middleware/      # autenticação, validação, rate limit, erros
 │   │   ├── modules/         # auth, catalog, favorites, admin, ingredients, comparisons, conversations, ai, ...
 │   │   ├── app.ts           # montagem do Express (injeção do serviço de IA)
-│   │   └── server.ts        # inicialização e rotina de retenção
+│   │   ├── index.ts         # entrada da função serverless na Vercel
+│   │   └── server.ts        # inicialização local e rotina de retenção
 │   ├── scripts/             # bootstrap do admin, migração de produtos legados, benchmark da busca
 │   └── tests/               # unitários e integração (Supertest + PostgreSQL)
 ├── frontend/
@@ -147,8 +152,8 @@ Rotulai/
 ### 1. Instalar dependências
 
 ```bash
-git clone https://github.com/MilenaAmaral/Rotulai.git
-cd Rotulai
+git clone https://github.com/MilenaAmaral/RotulAI.git
+cd RotulAI
 npm run setup        # instala tudo e gera o Prisma Client
 ```
 
@@ -197,7 +202,7 @@ Depois de executar, apague as duas variáveis do `.env`. O comando nunca troca a
 
 ### Catálogo de demonstração
 
-O seed público cadastra **101 produtos de skincare** de 13 marcas encontradas no Brasil (Avène, Bioderma, CeraVe, Cetaphil, Eucerin, ISDIN, La Roche-Posay, Neutrogena, Nivea, Principia, Sallve, The Ordinary e Vichy), distribuídos entre limpeza, hidratantes, séruns, protetores solares, tônicos, tratamentos e área dos olhos.
+O seed público cadastra **101 produtos de skincare** de 13 marcas encontradas no Brasil (Avène, Bioderma, CeraVe, Cetaphil, Eucerin, ISDIN, La Roche-Posay, Neutrogena, Nivea, Principia, Sallve, The Ordinary e Vichy), distribuídos entre limpeza, hidratantes, séruns, protetores solares, tônicos, tratamentos, área dos olhos e outros.
 
 - As listas de ingredientes foram copiadas das páginas públicas do [Skinsort](https://skinsort.com) em 18/10/2026. Cada produto guarda o link da página de origem (`referenceUrl`), exibido na tela de detalhes.
 - Fórmulas mudam e podem variar por país e lote. O rótulo da embalagem é sempre a fonte definitiva.
@@ -353,7 +358,7 @@ No PowerShell, defina antes cada variável com `$env:DATABASE_URL="<url-direta>"
 | `TRUST_PROXY`       | `1`                                                                       |
 | `COOKIE_SECURE`     | `true`                                                                    |
 | `COOKIE_SAMESITE`   | `lax` (front-end e API no mesmo domínio)                                  |
-| `CORS_ORIGINS`      | domínio público, ex.: `https://rotulai.vercel.app`                        |
+| `CORS_ORIGINS`      | domínio público, ex.: `https://rotulai-delta.vercel.app`                  |
 | `AI_PROVIDER`       | `none` (ou `anthropic` com `ANTHROPIC_API_KEY` para habilitar a IA)       |
 
 **3. Importar o repositório** na Vercel mantendo o diretório raiz `./`. `vercel.json` configura cada serviço e seus frameworks; confira no preview que os dois foram reconhecidos. A orientação explícita para selecionar o preset `Services` pertence ao modelo legado `experimentalServices`; use o preset somente se o fluxo atual da Vercel o solicitar.
@@ -374,7 +379,7 @@ Particularidades da execução como função da Vercel:
 
 ## Segurança
 
-- Senhas com bcrypt (custo 12); política mínima de 8 caracteres com letras e números.
+- Senhas com bcryptjs (custo 12); política mínima de 8 caracteres com letras e números.
 - Access token JWT de 15 minutos mantido **apenas em memória** no navegador (nunca em `localStorage`).
 - A única preferência da interface salva no `localStorage` é o tema claro/escuro (`rotulai-theme`); tokens e dados de sessão não são armazenados ali.
 - Refresh token opaco de 256 bits em cookie `httpOnly`, com `path=/api/auth`, armazenado no banco somente como hash SHA-256, rotacionado a cada uso; reuso de um token antigo revoga toda a família de sessões.
