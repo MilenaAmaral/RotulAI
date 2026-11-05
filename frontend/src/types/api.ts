@@ -82,6 +82,7 @@ export interface PublicProductListItem {
 
 export interface PublicProductSearchPage extends Page<PublicProductListItem> {
   suggestions: PublicProductListItem[];
+  suggestionType?: 'related' | 'correction' | null;
 }
 
 export interface PublicProduct {

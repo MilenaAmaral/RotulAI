@@ -37,6 +37,10 @@ export function PublicProductsPage() {
   }, [searchText, q, params, setParams]);
 
   const products = usePublicProducts({ q: q || undefined, category, page, pageSize: 12 });
+  const isUpdatingResults = products.isFetching && products.isPlaceholderData;
+  const suggestions = products.data?.suggestions ?? [];
+  const visibleProductIds = new Set(products.data?.items.map((item) => item.id) ?? []);
+  const hiddenOnMobileSuggestions = suggestions.filter((item) => visibleProductIds.has(item.id));
   const updateParams = (changes: Record<string, string>) => {
     const next = new URLSearchParams(params);
     for (const [key, value] of Object.entries(changes)) {
@@ -60,7 +64,7 @@ export function PublicProductsPage() {
       <div className="mb-5 flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <label htmlFor="busca-catalogo-publico" className="sr-only">
-            Buscar produto por nome ou marca
+            Buscar produto, marca ou necessidade
           </label>
           <Search
             size={18}
@@ -72,7 +76,7 @@ export function PublicProductsPage() {
             type="search"
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
-            placeholder="Buscar por nome ou marca"
+            placeholder="Busque por produto, marca ou o que quer tratar (ex.: espinha)"
             className={`${inputClass} pl-10`}
           />
         </div>
@@ -95,16 +99,16 @@ export function PublicProductsPage() {
           </select>
         </div>
       </div>
-      {products.isLoading && <LoadingBlock label="Carregando produtos..." />}
+      {(products.isLoading || isUpdatingResults) && <LoadingBlock label="Carregando produtos..." />}
       {products.isError && <ErrorState error={products.error} onRetry={() => void products.refetch()} />}
-      {products.data?.suggestions.length ? (
+      {!isUpdatingResults && suggestions.length > 0 ? (
         <section aria-labelledby="sugestoes-busca" className="mb-5 rounded-[var(--radius-panel)] bg-brand-soft p-4">
           <h2 id="sugestoes-busca" className="font-semibold">
-            Você quis dizer...
+            {products.data?.suggestionType === 'related' ? `Produtos relacionados a "${q}"` : 'Você quis dizer...'}
           </h2>
           <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
-            {products.data.suggestions.map((item) => (
-              <li key={item.id}>
+            {suggestions.map((item) => (
+              <li key={item.id} className={visibleProductIds.has(item.id) ? 'hidden sm:list-item' : undefined}>
                 <Link
                   to={`/catalogo/produtos/${item.slug}`}
                   className="font-medium underline decoration-brand-accent decoration-2 underline-offset-4"
@@ -114,16 +118,21 @@ export function PublicProductsPage() {
               </li>
             ))}
           </ul>
+          {hiddenOnMobileSuggestions.length === suggestions.length && (
+            <p className="mt-2 text-sm text-ink-soft sm:hidden">
+              Os produtos relacionados já aparecem na lista abaixo.
+            </p>
+          )}
         </section>
       ) : null}
-      {products.data?.total === 0 && !products.data.suggestions.length && (
+      {!isUpdatingResults && products.data?.total === 0 && !suggestions.length && (
         <EmptyState
           icon={<Package size={20} />}
           title="Nenhum produto encontrado"
           description="Ajuste a busca ou a categoria para encontrar outros produtos."
         />
       )}
-      {products.data && products.data.total > 0 && (
+      {!isUpdatingResults && products.data && products.data.total > 0 && (
         <>
           <p className="mb-3 text-sm text-ink-soft" aria-live="polite">
             {pluralize(products.data.total, 'produto', 'produtos')}
